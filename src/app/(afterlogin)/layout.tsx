@@ -6,9 +6,9 @@ import ZLogo from '../../../public/5Udwvqim.jpg';
 import NavMenu from './_component/NavMenu';
 import TrendSection from './_component/TrendSection';
 import LogoutButton from './_component/LogoutButton';
-
 import FollowRecommend from './_component/FollowRecommend';
 import RightSearchZone from './_component/RightSearchZone';
+import { MSWComponent } from '../_component/MSWComponent';
 
 type Props = { children: ReactNode; modal: ReactNode };
 export default function AfterLoginLayout({ children, modal }: Props) {
@@ -43,6 +43,7 @@ export default function AfterLoginLayout({ children, modal }: Props) {
                     </div>
                 </section>
             </header>
+
             <div className={style.rightSectionWrapper}>
                 <div className={style.rightSectionInner}>
                     <main className={style.main}>{children}</main>

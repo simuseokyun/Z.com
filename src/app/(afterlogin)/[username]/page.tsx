@@ -1,6 +1,7 @@
 import style from './profile.module.css';
 import Post from '../_component/Post';
 import BackButton from '../_component/BackButton';
+import UserInfo from './_component/UserInfo';
 export default function Profile() {
     const user = {
         id: 'zerohch0',
@@ -14,16 +15,7 @@ export default function Profile() {
                 <BackButton />
                 <h3 className={style.headerTitle}>{user.nickname}</h3>
             </div>
-            <div className={style.userZone}>
-                <div className={style.userImage}>
-                    <img src={user.image} alt={user.id} />
-                </div>
-                <div className={style.userName}>
-                    <div>{user.nickname}</div>
-                    <div>@{user.id}</div>
-                </div>
-                <button className={style.followButton}>팔로우</button>
-            </div>
+            <UserInfo user={user} />
             <div>
                 <Post />
                 <Post />
