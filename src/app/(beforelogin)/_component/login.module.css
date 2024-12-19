@@ -93,6 +93,12 @@
     padding: 12px 8px 8px;
     outline: none;
 }
+.message {
+    color: red;
+    display: flex;
+    justify-content: center;
+    font-weight: bold;
+}
 
 .modalFooter {
     padding: 24px 80px;

@@ -1,38 +1,54 @@
 'use client';
-import { useRouter } from 'next/navigation';
+
 import style from '@/app/(beforeLogin)/_component/login.module.css';
-import { useState } from 'react';
+import { ChangeEventHandler, FormEventHandler, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import CloseButton from '@/app/(afterlogin)/_component/CloseButton';
 
 export default function LoginModal() {
+    const [id, setId] = useState('');
+    const [password, setPassword] = useState('');
+    const [message, setMessage] = useState('');
     const router = useRouter();
-    const [id, setId] = useState();
-    const [password, setPassword] = useState();
-    const [message, setMessage] = useState();
-    const onSubmit = () => {};
+
+    const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
+        e.preventDefault();
+        setMessage('');
+        try {
+            const result = await signIn('credentials', {
+                username: id,
+                password,
+                redirect: false, // redirect가 false인 경우에는 실패했어도 네트워크엔 성공했다고 뜸 / 그러나 redirect를 true로 만들면 아래 코드가 실행되지 않기때문에 세세한 에러처리를 할 수 없음 / 따라서 auth.ts의 코드를 바꿔줬음 => auth.ts로 이동
+            });
+            console.log(result);
+            if (result?.code === 'no_user') {
+                setMessage('가입하지 않은 유저입니다.');
+            } else if (result?.code === 'wrong_password') {
+                setMessage('비밀번호가 틀렸습니다.');
+            }
+            router.replace('/home');
+        } catch (err) {
+            console.error(err);
+        }
+    };
     const onClickClose = () => {
         router.back();
     };
 
-    const onChangeId = () => {};
+    const onChangeId: ChangeEventHandler<HTMLInputElement> = (e) => {
+        setId(e.target.value);
+    };
 
-    const onChangePassword = () => {};
+    const onChangePassword: ChangeEventHandler<HTMLInputElement> = (e) => {
+        setPassword(e.target.value);
+    };
 
     return (
         <div className={style.modalBackground}>
             <div className={style.modal}>
                 <div className={style.modalHeader}>
-                    <button className={style.closeButton} onClick={onClickClose}>
-                        <svg
-                            width={24}
-                            viewBox="0 0 24 24"
-                            aria-hidden="true"
-                            className="r-18jsvk2 r-4qtqp9 r-yyyyoo r-z80fyv r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-19wmn03"
-                        >
-                            <g>
-                                <path d="M10.59 12L4.54 5.96l1.42-1.42L12 10.59l6.04-6.05 1.42 1.42L13.41 12l6.05 6.04-1.42 1.42L12 13.41l-6.04 6.05-1.42-1.42L10.59 12z"></path>
-                            </g>
-                        </svg>
-                    </button>
+                    <CloseButton />
                     <div>로그인하세요.</div>
                 </div>
                 <form onSubmit={onSubmit}>

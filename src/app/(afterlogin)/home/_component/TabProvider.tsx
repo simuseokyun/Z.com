@@ -4,7 +4,7 @@ import { useState, createContext } from 'react';
 
 type Props = { children: ReactNode };
 
-const TabContext = createContext({
+export const TabContext = createContext({
     tab: 'recommend',
     setTab: (value: 'recommend' | 'follow') => {},
 });

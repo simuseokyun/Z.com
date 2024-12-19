@@ -1,15 +1,19 @@
 'use client';
 import style from './tab.module.css';
 import { useState } from 'react';
+import { useTabState } from '@/store/tab';
 
 export default function Tab() {
-    const [tab, setTab] = useState('rec');
+    const tab = useTabState((state) => state.mode); // 상태 읽기
+    const setRec = useTabState((state) => state.setRec); // 상태 변경 함수 읽기
+    const setFol = useTabState((state) => state.setFol); // 상태 변경 함수 읽기
 
     const onClickRec = () => {
-        setTab('rec');
+        setRec(); // 상태 변경 함수 호출
     };
+
     const onClickFol = () => {
-        setTab('fol');
+        setFol(); // 상태 변경 함수 호출
     };
 
     return (
