@@ -24,9 +24,22 @@
 
 .userZone {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+
     border-bottom: 1px solid rgb(239, 243, 244);
     padding: 12px 16px;
+}
+
+.userRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.userFollower {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding-top: 8px;
 }
 
 .userImage {
@@ -37,6 +50,7 @@
 }
 .userImage img {
     width: 134px;
+    height: 134px;
     border-radius: 50%;
 }
 .userName {
@@ -50,6 +64,7 @@
 .userName > div:last-child {
     font-size: 15px;
 }
+
 .followButton {
     border: 1px solid rgb(207, 217, 222);
     padding: 0 16px;

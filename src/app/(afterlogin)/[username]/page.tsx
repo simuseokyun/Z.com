@@ -10,13 +10,15 @@ import { HydrationBoundary } from '@tanstack/react-query';
 import { dehydrate } from '@tanstack/react-query';
 import { QueryClient } from '@tanstack/react-query';
 
+import { getUserPosts } from './_lib/getUserPosts';
+import UserPosts from './_component/UserPosts';
 export async function generateMetadata({ params }: { params: Promise<{ username: string }> }) {
-    // params와 searchParams는 Page.tsx에서만 호출할 수 있음
+    // Promise<{ username: string }>는 Promise 객체를 반환하는 비동기 작업의 결과가 특정한 형태의 객체라는 것을 나타냅니다.
     const { username } = await params;
     const user: User = await getUserServer({ queryKey: ['users', username] });
     return {
-        title: `${user.nickname} (${user.id}) / Z`,
-        description: `${user.nickname} (${user.id}) 프로필`,
+        title: `${user.nickname} 프로필`,
+        describe: `${user.nickname} 프로필에 오신걸 환영합니다`,
     };
 }
 export default async function Profile({ params }: { params: { username: string } }) {
@@ -24,17 +26,18 @@ export default async function Profile({ params }: { params: { username: string }
     const session = await auth();
     const queryClient = new QueryClient();
     await queryClient.prefetchQuery({ queryKey: ['users', username], queryFn: getUserServer });
-    const dehydrateState = dehydrate(queryClient);
+    await queryClient.prefetchInfiniteQuery({
+        queryKey: ['posts', 'users', username],
+        queryFn: getUserPosts,
+        initialPageParam: 0,
+    });
+    const dehydratedState = dehydrate(queryClient);
 
     return (
-        <HydrationBoundary state={dehydrateState}>
+        <HydrationBoundary state={dehydratedState}>
             <main className={style.main}>
-                <div className={style.header}>
-                    <BackButton />
-                    <h3 className={style.headerTitle}>{session?.user?.name}</h3>
-                </div>
-                {/* <UserInfo user={data?.user} /> */}
-                <div></div>
+                <UserInfo username={username} session={session} />
+                <UserPosts username={username} />
             </main>
         </HydrationBoundary>
     );

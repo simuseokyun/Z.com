@@ -11,6 +11,7 @@ import RightSearchZone from './_component/RightSearchZone';
 import { auth } from '@/auth';
 import RQProvider from './_component/RQProvider';
 import FollowRecommendSection from './_component/FollowRecommendSection';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 type Props = { children: ReactNode; modal: ReactNode };
 export default async function AfterLoginLayout({ children, modal }: Props) {

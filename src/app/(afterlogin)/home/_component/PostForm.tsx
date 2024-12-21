@@ -59,10 +59,12 @@ export default function PostForm({ me }: Props) {
                 credentials: 'include',
                 body: formData,
             });
+            console.log(response);
             if (response.status === 201) {
                 setContent('');
                 setPreview([]);
                 const newPost = await response.json();
+                console.log(newPost);
                 queryClient.setQueryData(['posts', 'recommends'], (prevData: { pages: Post[][] }) => {
                     const shallow = {
                         ...prevData,
@@ -72,15 +74,15 @@ export default function PostForm({ me }: Props) {
                     shallow.pages[0].unshift(newPost);
                     return shallow;
                 });
-                queryClient.setQueryData(['posts', 'followings'], (prevData: { pages: Post[][] }) => {
-                    const shallow = {
-                        ...prevData,
-                        pages: [...prevData.pages],
-                    };
-                    shallow.pages[0] = [...shallow.pages[0]];
-                    shallow.pages[0].unshift(newPost);
-                    return shallow;
-                });
+                // queryClient.setQueryData(['posts', 'followings'], (prevData: { pages: Post[][] }) => {
+                //     const shallow = {
+                //         ...prevData,
+                //         pages: [...prevData.pages],
+                //     };
+                //     shallow.pages[0] = [...shallow.pages[0]];
+                //     shallow.pages[0].unshift(newPost);
+                //     return shallow;
+                // });
             }
         } catch (err) {
             alert('업로드 중 에러가 발생했습니다.');

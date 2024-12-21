@@ -8,12 +8,26 @@ import { getPostRecommends } from './_lib/getPostRecommend';
 import PostRecommends from './_component/PostRecommends';
 import TabDecider from './_component/TabDecider';
 import { auth } from '@/auth';
+import { query } from 'express';
+import { getPostFollowings } from './_lib/getPostFollwings';
 
 export default async function Home() {
     const session = await auth();
     const queryClient = new QueryClient();
-    await queryClient.prefetchQuery({ queryKey: ['post', 'recommend'], queryFn: getPostRecommends });
+    await Promise.all([
+        queryClient.prefetchInfiniteQuery({
+            queryKey: ['posts', 'recommends'],
+            queryFn: getPostRecommends,
+            initialPageParam: 0,
+        }),
+        queryClient.prefetchInfiniteQuery({
+            queryKey: ['posts', 'followings'],
+            queryFn: getPostFollowings,
+            initialPageParam: 0,
+        }),
+    ]);
     const dehydrateState = dehydrate(queryClient);
+
     return (
         <main className={style.main}>
             <HydrationBoundary state={dehydrateState}>
