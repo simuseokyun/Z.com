@@ -47,6 +47,10 @@
     height: 32px;
     border-radius: 16px;
 }
-.followButtonSection button:hover {
-    background-color: rgb(39, 44, 48);
+.followButtonSection.following button {
+    background-color: #eee;
+    color: black;
 }
+/* .followButtonSection button:hover {
+    background-color: rgb(39, 44, 48);
+} */

@@ -22,28 +22,28 @@ export default function Post({ noImage, post }: Props) {
         <PostArticle post={post}>
             <div className={style.postWrapper}>
                 <div className={style.postUserSection}>
-                    <Link href={`/${post.User.id}`} className={style.postUserImage}>
-                        <img src={post.User.image} />
+                    <Link href={`/${post?.User?.id}`} className={style.postUserImage}>
+                        <img src={post?.User?.image} />
                         <div className={style.postShade} />
                     </Link>
                 </div>
                 <div className={style.postBody}>
                     <div className={style.postMeta}>
-                        <Link href={`/${post.User.id}`}>
-                            <span className={style.postUserName}>{post.User.nickname}</span>
+                        <Link href={`/${post?.User?.id}`}>
+                            <span className={style.postUserName}>{post?.User?.nickname}</span>
                             &nbsp;
-                            <span className={style.postUserId}>@{post.User.id}</span>
+                            <span className={style.postUserId}>@{post?.User?.id}</span>
                             &nbsp; · &nbsp;
                         </Link>
-                        <span className={style.postDate}>{dayjs(post.createdAt).fromNow(true)}</span>
+                        <span className={style.postDate}>{dayjs(post?.createdAt).fromNow(true)}</span>
                     </div>
-                    <div>{post.content}</div>
+                    <div>{post?.content}</div>
                     {!noImage && (
                         <div>
                             <PostImages post={post} />
                         </div>
                     )}
-                    <ActionButtons />
+                    <ActionButtons post={post} />
                 </div>
             </div>
         </PostArticle>

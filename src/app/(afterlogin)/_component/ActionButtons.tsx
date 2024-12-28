@@ -1,15 +1,47 @@
 'use client';
+import { useSession } from 'next-auth/react';
 import style from './post.module.css';
 import cx from 'classnames';
+import { Post } from '@/model/Post';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { query } from 'express';
 
 type Props = {
     white?: boolean;
+    post: Post;
 };
-export default function ActionButtons({ white }: Props) {
-    const commented = false;
-    const reposted = false;
-    const liked = false;
+export default function ActionButtons({ white, post }: Props) {
+    const { data } = useSession();
+    const queryClient = useQueryClient();
+    // useQueryClient()는 React Query에서 QueryClient 인스턴스를 가져오는 훅입니다. 이 훅은 React Query의 캐시와 관련된 여러 작업을 수행하는 데 사용됩니다. useQueryClient()를 통해 React Query의 Query Client를 직접 다룰 수 있으며, 이를 통해 쿼리 데이터를 가져오거나, 업데이트하거나, 무효화하는 등의 다양한 작업을 할 수 있습니다.
 
+    // 1. getQueryData(안에 쿼리키 넣어줘야 함)
+    // 설명: 주어진 쿼리 키에 해당하는 데이터를 반환합니다.
+
+    // 2. setQueryData(쿼리키,수정할 데이터 넣어주기)
+    // 설명: 특정 쿼리 키에 데이터를 설정합니다. 주로 쿼리 데이터를 수동으로 업데이트할 때 사용합니다.
+
+    // 3.invalidateQueries(쿼리키)
+    // 설명: 특정 쿼리 키 또는 쿼리 키 패턴에 해당하는 모든 쿼리를 무효화하고, 재요청하도록 설정합니다. 보통 쿼리 데이터를 변경한 후 이를 다시 가져오도록 할 때 사용합니다. queryClient.invalidateQueries(["쿼리키"])
+    const commented = post.Comments.find((comment) => comment.userId === data?.user?.id);
+    const reposted = post.Reposts.find((Repost) => Repost.userId === data?.user?.id);
+    const liked = post.Hearts.find((heart) => heart.userId === data?.user?.id);
+
+    const Heart = useMutation({
+        mutationFn: () => {
+            return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${post.postId}/heart`, {
+                method: 'post',
+                credentials: 'include',
+            });
+        },
+        onMutate() {
+            const queryCache = queryClient.getQueryCache(); // getQueryCache는 모든 쿼리값 가져오는 메서드
+            const queryKeys = queryCache.getAll().map((cache) => cache.queryKey);
+            console.log(queryKeys);
+        },
+        onError() {},
+    });
     const onClickComment = () => {};
     const onClickRepost = () => {};
     const onClickHeart = () => {};

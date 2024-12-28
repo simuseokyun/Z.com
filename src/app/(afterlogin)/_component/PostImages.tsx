@@ -17,9 +17,13 @@ type Props = {
 };
 
 export default function PostImages({ post }: Props) {
-    if (!post.Images) return null;
-    if (!post.Images.length) return null;
-    if (post.Images.length === 1) {
+    if (!post) {
+        return null;
+    }
+    if (!post?.Images) return null;
+    if (!post?.Images?.length) return null;
+
+    if (post?.Images?.length === 1) {
         return (
             <Link
                 href={`/${post.User.id}/status/${post.postId}/photo/${post.Images[0].imageId}`}
