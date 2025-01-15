@@ -2,10 +2,8 @@
 
 import style from './signup.module.css';
 import onSubmit from '../_lib/signup';
-import BackButton from '@/app/(afterlogin)/_component/BackButton';
 import { useFormStatus } from 'react-dom';
 import { useActionState } from 'react';
-import { useFormState } from 'react-dom';
 import CloseButton from '@/app/(afterlogin)/_component/CloseButton';
 
 function showMessage(message: string | null | undefined) {
@@ -34,8 +32,6 @@ export default function SignupModal() {
     const [state, formAction] = useActionState(onSubmit, { message: null });
     const { pending } = useFormStatus();
 
-    console.log('state', state);
-
     return (
         <>
             <div className={style.modalBackground}>
@@ -48,14 +44,15 @@ export default function SignupModal() {
                         <div className={style.modalBody}>
                             <div className={style.inputDiv}>
                                 <label className={style.inputLabel} htmlFor="id">
+                                    {/* html은 for을 사용하지만 react에선 htmlFor 사용 */}
                                     아이디
                                 </label>
                                 <input
                                     id="id"
-                                    name="id"
+                                    name="id" // input의 name값은 formData의 key값으로 들어감
                                     className={style.input}
                                     type="text"
-                                    placeholder=""
+                                    placeholder="아이디를 입력하세요"
                                     required
                                     defaultValue={state.id as string}
                                 />
@@ -69,7 +66,7 @@ export default function SignupModal() {
                                     name="name"
                                     className={style.input}
                                     type="text"
-                                    placeholder=""
+                                    placeholder="이름을 입력하세요"
                                     required
                                     defaultValue={state.nickname as string}
                                 />
@@ -83,7 +80,7 @@ export default function SignupModal() {
                                     name="password"
                                     className={style.input}
                                     type="password"
-                                    placeholder=""
+                                    placeholder="비밀번호를 입력해주세요"
                                     required
                                     defaultValue={state.password as string}
                                 />

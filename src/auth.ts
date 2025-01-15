@@ -6,6 +6,8 @@ export const {
     handlers: { GET, POST },
     auth,
     signIn,
+    unstable_update,
+    signOut,
 } = NextAuth({
     pages: {
         signIn: '/i/flow/login',
@@ -18,7 +20,7 @@ export const {
     //         }
     //         return true;
     //     },
-    // },
+    // }, 이 부분은 middleware.ts에서 따로 처리해주기 때문에 지웟음
     providers: [
         CredentialsProvider({
             async authorize(credentials) {
@@ -28,7 +30,7 @@ export const {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        id: credentials.username,
+                        id: credentials.username, // username과 password는 회원가입 서버액션에서 설정한 키값과 일치해야함 => signup.ts
                         password: credentials.password,
                     }),
                 });

@@ -2,15 +2,15 @@ export async function getTrends() {
     const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/hashtags/trends`, {
         next: {
             tags: ['trends'],
+            // Next.js의 fetch 확장 기능 중 하나로, 특정 요청에 태그(tags)를 추가하여 데이터 캐싱 및 재검증(revalidation)을 효율적으로 관리할 수 있도록 도와주는 설정입니다.
+            // 해당 데이터에 trends 라는 태그를 추가해주는 것
         },
 
-        credentials: 'include', // 로그인 해야 데이터를 가져올 수 있다면 이 코드 넣어주기aa넹ㅁㄴㅇㅁㄴㅇㅁㄴㅇㅁㄴㅇ
+        credentials: 'include', // 사용자의 인증 정보를 포함하여 요청을 전송하도록 설정합니다 (쿠키)
+        cache: 'no-store', // 사실 next15 부터는 no-store 가 기본값이 되어서 명시 안해줘도 됨
     });
-    // The return value is *not* serialized
-    // You can return Date, Map, Set, etc.
 
     if (!res.ok) {
-        // This will activate the closest `error.js` Error Boundary
         throw new Error('Failed to fetch data');
     }
 

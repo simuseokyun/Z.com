@@ -1,11 +1,9 @@
 'use client';
 import { User } from '@/model/User';
 import style from './followRecommend.module.css';
-import { faker } from '@faker-js/faker';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from 'next-auth/react';
 import { MouseEventHandler } from 'react';
-
 import cx from 'classnames';
 type Props = { user: User };
 export default function FollowRecommend({ user }: Props) {
@@ -35,7 +33,7 @@ export default function FollowRecommend({ user }: Props) {
                 queryClient.setQueryData(['users', 'followRecommends'], shallow);
             }
             const value2: User | undefined = queryClient.getQueryData(['users', userId]);
-            console.log(value2);
+            // console.log(value2);
             if (value2) {
                 const shallow = {
                     ...value2,
@@ -80,7 +78,7 @@ export default function FollowRecommend({ user }: Props) {
     });
     const unfollow = useMutation({
         mutationFn: (userId: string) => {
-            console.log('unfollow', userId);
+            // console.log('unfollow', userId);
             return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/follow`, {
                 credentials: 'include',
                 method: 'delete',
@@ -130,7 +128,7 @@ export default function FollowRecommend({ user }: Props) {
                 queryClient.setQueryData(['users', 'followRecommends'], shallow);
             }
             const value2: User | undefined = queryClient.getQueryData(['users', userId]);
-            console.log(value2);
+            // console.log(value2);
             if (value2) {
                 const shallow = {
                     ...value2,

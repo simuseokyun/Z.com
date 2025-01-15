@@ -4,11 +4,26 @@ import style from './rightSearchZone.module.css';
 import { usePathname } from 'next/navigation';
 import React from 'react';
 import SearchForm from './SearchForm';
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 export default function RightSearchZone() {
     const pathname = usePathname();
-    const onChangeFollow = () => {};
-    const onChangeAll = () => {};
+    const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const onChangeFollow = () => {
+        // * 왜 new URLSearchParams를 굳이 사용하는가 ?
+        // 왜냐면 useSearchParams()로 인해 받은 값은 불변성을 가지고 있어 맘대로 수정할 수 없음 (readOnly)
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('pf', 'on');
+        router.replace(`/search?${newSearchParams.toString()}`);
+    };
+    const onChangeAll = () => {
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.delete('pf');
+        router.replace(`/search?${newSearchParams.toString()}`);
+    };
     if (pathname === '/explore') {
         return null;
     }

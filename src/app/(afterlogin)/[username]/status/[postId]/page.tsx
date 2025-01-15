@@ -11,7 +11,7 @@ import { getSinglePostServer } from './_lib/getSinglePostServer';
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { getComments } from './_lib/getComments';
 import CommentForm from './_component/CommentForm';
-import SinglePost from './_component/SinglePosts';
+import SinglePost from './_component/SinglePost';
 type Props = {
     params: Promise<{ postId: string; username: string }>;
 };
@@ -45,7 +45,7 @@ export default async function Page({ params }: Props2) {
                     <h3 className={style.headerTitle}>게시하기</h3>
                 </div>
                 <SinglePost id={postId} />
-                <CommentForm />
+                <CommentForm id={postId} />
                 <Comments id={postId} />
             </HydrationBoundary>
         </div>

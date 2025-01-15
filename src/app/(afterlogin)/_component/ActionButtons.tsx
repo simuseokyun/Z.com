@@ -4,8 +4,11 @@ import style from './post.module.css';
 import cx from 'classnames';
 import { Post } from '@/model/Post';
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
-import { query } from 'express';
+import { useModalState } from '@/store/modal';
+import { MouseEventHandler } from 'react';
+import { InfiniteData } from '@tanstack/react-query';
 
 type Props = {
     white?: boolean;
@@ -13,6 +16,10 @@ type Props = {
 };
 export default function ActionButtons({ white, post }: Props) {
     const { data } = useSession();
+    const { setMode, setData } = useModalState();
+    const modalStore = useModalState();
+    const parent = modalStore.data;
+    const router = useRouter();
     const queryClient = useQueryClient();
     // useQueryClient()는 React Query에서 QueryClient 인스턴스를 가져오는 훅입니다. 이 훅은 React Query의 캐시와 관련된 여러 작업을 수행하는 데 사용됩니다. useQueryClient()를 통해 React Query의 Query Client를 직접 다룰 수 있으며, 이를 통해 쿼리 데이터를 가져오거나, 업데이트하거나, 무효화하는 등의 다양한 작업을 할 수 있습니다.
 
@@ -24,9 +31,9 @@ export default function ActionButtons({ white, post }: Props) {
 
     // 3.invalidateQueries(쿼리키)
     // 설명: 특정 쿼리 키 또는 쿼리 키 패턴에 해당하는 모든 쿼리를 무효화하고, 재요청하도록 설정합니다. 보통 쿼리 데이터를 변경한 후 이를 다시 가져오도록 할 때 사용합니다. queryClient.invalidateQueries(["쿼리키"])
-    const commented = post.Comments.find((comment) => comment.userId === data?.user?.id);
-    const reposted = post.Reposts.find((Repost) => Repost.userId === data?.user?.id);
-    const liked = post.Hearts.find((heart) => heart.userId === data?.user?.id);
+    const commented = !!post?.Comments?.find((comment) => comment.userId === data?.user?.id);
+    const reposted = !!post?.Reposts?.find((Repost) => Repost.userId === data?.user?.id);
+    const liked = !!post?.Hearts?.find((v) => v.userId === data?.user?.email);
 
     const Heart = useMutation({
         mutationFn: () => {
@@ -39,12 +46,28 @@ export default function ActionButtons({ white, post }: Props) {
             const queryCache = queryClient.getQueryCache(); // getQueryCache는 모든 쿼리값 가져오는 메서드
             const queryKeys = queryCache.getAll().map((cache) => cache.queryKey);
             console.log(queryKeys);
+            queryKeys.forEach((queryKey, i) => {
+                if (queryKey[0] === 'posts') {
+                    console.log(queryKey);
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                }
+            });
         },
         onError() {},
     });
-    const onClickComment = () => {};
-    const onClickRepost = () => {};
-    const onClickHeart = () => {};
+    const onClickComment: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
+        setMode('댓글');
+        setData(post);
+        router.push('/compose/tweet');
+    };
+    const onClickRepost: MouseEventHandler<HTMLButtonElement> = (e) => e.stopPropagation();
+    {
+    }
+    const onClickHeart: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
+        Heart.mutate();
+    };
 
     return (
         <div className={style.actionButtons}>
@@ -56,7 +79,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{1 || ''}</div>
+                <div className={style.count}>{post?._count?.Comments}</div>
             </div>
             <div className={cx(style.repostButton, reposted && style.reposted, white && style.white)}>
                 <button onClick={onClickRepost}>
@@ -66,7 +89,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{1 || ''}</div>
+                <div className={style.count}>{post?._count?.Reposts}</div>
             </div>
             <div className={cx([style.heartButton, liked && style.liked, white && style.white])}>
                 <button onClick={onClickHeart}>
@@ -76,7 +99,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{0 || ''}</div>
+                <div className={style.count}>{post?._count?.Hearts}</div>
             </div>
         </div>
     );

@@ -1,10 +1,17 @@
 'use client';
-import Post from '@/app/(afterlogin)/_component/Post';
-import { getSinglePost } from '../_lib/getSinglePost';
+
 import { useQuery } from '@tanstack/react-query';
-export default function SinglePost({ id, noImage }: { id: string; noImage?: boolean }) {
-    const { data, error } = useQuery({
-        queryKey: ['post', id],
+import { getSinglePost } from '../_lib/getSinglePost';
+import Post from '@/app/(afterlogin)/_component/Post';
+import { Post as IPost } from '@/model/Post';
+
+type Props = {
+    id: string;
+    noImage?: boolean;
+};
+export default function SinglePost({ id, noImage }: Props) {
+    const { data: post, error } = useQuery<IPost, Object, IPost, [_1: string, _2: string]>({
+        queryKey: ['posts', id],
         queryFn: getSinglePost,
         staleTime: 60 * 1000, // fresh -> stale, 5분이라는 기준
         gcTime: 300 * 1000,
@@ -25,8 +32,9 @@ export default function SinglePost({ id, noImage }: { id: string; noImage?: bool
             </div>
         );
     }
-    if (!data) {
+    console.log(post);
+    if (!post) {
         return null;
     }
-    return <Post post={data} noImage={noImage} />;
+    return <Post key={post.postId} post={post} noImage={noImage} />;
 }

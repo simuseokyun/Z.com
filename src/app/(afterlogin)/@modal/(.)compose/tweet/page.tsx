@@ -1,24 +1,128 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
 import style from './modal.module.css';
-import { useRef, useState } from 'react';
+import { FormEventHandler, ChangeEventHandler, useRef, useState, MouseEventHandler, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useModalState } from '@/store/modal';
+import { useQueryClient } from '@tanstack/react-query';
+import TextAreaAutoSize from 'react-textarea-autosize';
+import Link from 'next/link';
+import { Post } from '@/model/Post';
+import { InfiniteData } from '@tanstack/react-query';
 export default function TweetModal() {
-    const [content, setContent] = useState();
+    const modalStore = useModalState();
+    console.log(modalStore);
+    const parent = modalStore.data;
+    const 글쓰기 = useMutation({
+        mutationFn: async (e: FormEvent) => {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('content', content);
+            preview.forEach((p) => {
+                if (p) {
+                    formData.append('images', p.file);
+                }
+            });
+            return await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData,
+            });
+        },
+        async onSuccess(response, variable) {
+            const newPost = await response.json();
+            setContent('');
+            setPreview([]);
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((cache) => {
+                return cache.queryKey;
+            });
+
+            queryKeys.forEach((key) => {
+                if (key[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(key);
+                    console.log(value);
+                    if (value && 'pages' in value) {
+                        const obj = value.pages.flat().find((v) => v.postId === parent?.postId);
+
+                        console.log(obj);
+
+                        if (obj) {
+                            // 존재는 하는지
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === parent?.postId);
+                            console.log('found index', index);
+                            const shallow = {
+                                ...value,
+                                pages: [...value.pages],
+                            };
+                            shallow.pages[0] = [...shallow.pages[0]];
+                            shallow.pages[0].unshift(newPost); // 새 게시글 추가
+                            console.log(shallow);
+                            queryClient.setQueryData(key, shallow);
+                        }
+                    }
+                }
+            });
+            await queryClient.invalidateQueries({
+                queryKey: ['trends'],
+            });
+        },
+        onError(error) {
+            console.error(error);
+            alert('업로드 중 에러가 발생했습니다.');
+        },
+        onSettled() {
+            router.back();
+        },
+    });
+    const queryClient = useQueryClient();
+    const [content, setContent] = useState<string>('');
+    const [preview, setPreview] = useState<Array<{ dataUrl: string; file: File } | null>>([]);
+    const { data: me } = useSession();
     const router = useRouter();
     const imageRef = useRef<HTMLInputElement>(null);
-    const onSubmit = () => {};
+
+    const onClickButton = () => {
+        imageRef.current?.click();
+        console.log('클릭햇음');
+    };
     const onClickClose = () => {
         router.back();
     };
-    const onClickButton = () => {};
-    const onChangeContent = () => {};
-
-    const me = {
-        id: 'zerohch0',
-        image: '/5Udwvqim.jpg',
+    const onUpload: ChangeEventHandler<HTMLInputElement> = (e) => {
+        e.preventDefault();
+        console.log('업로드');
+        if (e.target.files) {
+            Array.from(e.target.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPreview((prevPreview) => {
+                        const prev = [...prevPreview];
+                        prev[index] = {
+                            dataUrl: reader.result as string,
+                            file,
+                        };
+                        return prev;
+                    });
+                };
+                reader.readAsDataURL(file);
+            });
+        }
     };
-
+    const onChangeContent: ChangeEventHandler<HTMLTextAreaElement> = (e) => {
+        e.preventDefault();
+        setContent(e.target.value);
+    };
+    const onRemoveImage = (index: number) => {
+        setPreview((prevPreview) => {
+            const shallow = [...prevPreview];
+            shallow[index] = null;
+            return shallow;
+        });
+    };
     return (
         <div className={style.modalBackground}>
             <div className={style.modal}>
@@ -34,27 +138,67 @@ export default function TweetModal() {
                         </g>
                     </svg>
                 </button>
-                <form className={style.modalForm} onSubmit={onSubmit}>
+                <form className={style.modalForm} onSubmit={글쓰기.mutate}>
+                    {modalStore.mode === '새로운글' && parent && (
+                        <div className={style.modalOriginal}>
+                            <div className={style.postUserSection}>
+                                <div className={style.postUserImage}>
+                                    <img src={parent.User.image} alt={parent.User.id} />
+                                </div>
+                            </div>
+                            <div>
+                                {parent.content}
+                                <div>
+                                    <Link href={`/${parent.User.id}`} style={{ color: 'rgb(29, 155, 240)' }}>
+                                        @{parent.User.id}
+                                    </Link>
+                                    {parent.User.id}
+                                    님에게 보내는 답글
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     <div className={style.modalBody}>
                         <div className={style.postUserSection}>
                             <div className={style.postUserImage}>
-                                <img src={me.image} alt={me.id} />
+                                <img src={me?.user?.image as string} alt={me?.user?.id} />
                             </div>
                         </div>
                         <div className={style.inputDiv}>
-                            <textarea
+                            <TextAreaAutoSize
                                 className={style.input}
                                 placeholder="무슨 일이 일어나고 있나요?"
                                 value={content}
                                 onChange={onChangeContent}
                             />
+                            <div style={{ display: 'flex', marginTop: '10px' }}>
+                                {preview.map(
+                                    (v, index) =>
+                                        v && (
+                                            <div key={index} style={{ flex: 1 }} onClick={() => onRemoveImage(index)}>
+                                                <img
+                                                    src={v.dataUrl}
+                                                    alt="미리보기"
+                                                    style={{ objectFit: 'contain', width: '100%', maxHeight: 100 }}
+                                                />
+                                            </div>
+                                        )
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className={style.modalFooter}>
                         <div className={style.modalDivider} />
                         <div className={style.footerButtons}>
                             <div className={style.footerButtonLeft}>
-                                <input type="file" name="imageFiles" multiple hidden ref={imageRef} />
+                                <input
+                                    type="file"
+                                    name="imageFiles"
+                                    multiple
+                                    hidden
+                                    ref={imageRef}
+                                    onChange={onUpload}
+                                />
                                 <button className={style.uploadButton} type="button" onClick={onClickButton}>
                                     <svg width={24} viewBox="0 0 24 24" aria-hidden="true">
                                         <g>

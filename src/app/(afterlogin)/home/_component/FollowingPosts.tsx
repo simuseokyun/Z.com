@@ -1,5 +1,5 @@
 'use client';
-import { useInfiniteQuery, useQuery, InfiniteData } from '@tanstack/react-query';
+import { useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
 import Post from '../../_component/Post';
 import { Post as IPost } from '@/model/Post';
 import { getPostFollowings } from '../_lib/getPostFollwings';
@@ -8,7 +8,7 @@ import { useInView } from 'react-intersection-observer';
 
 export default function FolloiwngPosts() {
     const { ref, inView } = useInView();
-    const { data, hasNextPage, fetchNextPage, isFetching, isPending } = useInfiniteQuery<
+    const { data, hasNextPage, fetchNextPage, isFetching } = useInfiniteQuery<
         IPost[],
         Object,
         InfiniteData<IPost[]>,

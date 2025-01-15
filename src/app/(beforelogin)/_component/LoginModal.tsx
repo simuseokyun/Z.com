@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import CloseButton from '@/app/(afterlogin)/_component/CloseButton';
 
+// 회원가입 모달은 useActionState와 서버액션을 활용하여 컴포넌트를 구성했고 로그인 모달은 useState를 활용해 구성햇음
 export default function LoginModal() {
     const [id, setId] = useState('');
     const [password, setPassword] = useState('');
@@ -13,9 +14,10 @@ export default function LoginModal() {
     const router = useRouter();
 
     const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); // 브라우저의 기본동작을 막기위해 사용.
         setMessage('');
         try {
+            // 회원가입과 로그인을 할땐 Auth.js의 signIn함수 활용할 것
             const result = await signIn('credentials', {
                 username: id,
                 password,
@@ -26,14 +28,12 @@ export default function LoginModal() {
                 setMessage('가입하지 않은 유저입니다.');
             } else if (result?.code === 'wrong_password') {
                 setMessage('비밀번호가 틀렸습니다.');
+            } else {
+                router.replace('/home');
             }
-            router.replace('/home');
         } catch (err) {
             console.error(err);
         }
-    };
-    const onClickClose = () => {
-        router.back();
     };
 
     const onChangeId: ChangeEventHandler<HTMLInputElement> = (e) => {
