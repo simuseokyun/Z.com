@@ -56,20 +56,35 @@
 .userName {
     margin: 0 12px;
     flex: 1;
+    display: flex;
+    align-items: center;
 }
-.userName > div:first-child {
+
+.userName > div > div:first-child {
     font-weight: bold;
     font-size: 20px;
 }
-.userName > div:last-child {
+.userName > div > div:last-child {
     font-size: 15px;
 }
 
+.messageButton {
+    border: 1px solid #cfd9de;
+    width: 34px;
+    height: 34px;
+    border-radius: 17px;
+    margin-left: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+}
 .followButton {
     border: 1px solid rgb(207, 217, 222);
     padding: 0 16px;
     border-radius: 17px;
     height: 34px;
+    margin-left: 5px;
     background-color: #000;
     display: flex;
     align-items: center;
@@ -78,8 +93,12 @@
     color: white;
     cursor: pointer;
 }
-.followButton:hover {
+/* .followButton:hover {
     background-color: rgb(39, 44, 48);
+} */
+.following {
+    background-color: #eee;
+    color: black;
 }
 
 .backButton {

@@ -9,15 +9,19 @@ type Props = { user: User };
 export default function FollowRecommend({ user }: Props) {
     const { data: session } = useSession();
     const queryClient = useQueryClient();
-    const followed = user.Followers.find((user) => user.id === session?.user?.email);
+    // useQueryClient는 React Query에서 제공하는 훅으로, 쿼리 클라이언트에 접근할 수 있게 해줍니다.
+    // useQueryClient 훅을 사용하면 쿼리 클라이언트의 기능을 직접 사용하여, 쿼리 캐시를 업데이트하거나, 새로운 쿼리를 프리패치(pre-fetch)하거나, 캐시에서 데이터를 삭제하는 등의 작업을 할 수 있습니다.
+    const followed = !!user.Followers?.find((v) => v.id === session?.user?.email); // !!은 이중부정이란 뜻으로 값을 boolean값으로 변환함, !은 단일부정으로 boolean값으로 바꾸되 부정하는 것
     const follow = useMutation({
         mutationFn: (userId: string) => {
             return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/follow`, {
                 method: 'POST',
+
                 credentials: 'include',
             });
         },
         onMutate(userId: string) {
+            // onMutate는 하트누르기와 같은 옵티미스틱 적용을 할때 사용하고 onSuccess는 성공했을때만 동작하게
             const value: User[] | undefined = queryClient.getQueryData(['users', 'followRecommends']);
             if (value) {
                 const index = value.findIndex((a) => a.id === userId);
@@ -47,6 +51,7 @@ export default function FollowRecommend({ user }: Props) {
             }
         },
         onError(error, userId: string) {
+            // onError영역의 첫 번째 파라미터는 무조건 error
             const value: User[] | undefined = queryClient.getQueryData(['users', 'followRecommends']);
             if (value) {
                 const index = value.findIndex((a) => a.id === userId);
