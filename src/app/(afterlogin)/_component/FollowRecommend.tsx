@@ -15,7 +15,7 @@ export default function FollowRecommend({ user }: Props) {
     const follow = useMutation({
         mutationFn: (userId: string) => {
             return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/follow`, {
-                method: 'POST',
+                method: 'post',
 
                 credentials: 'include',
             });
@@ -150,6 +150,7 @@ export default function FollowRecommend({ user }: Props) {
     const onFollow: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation(); // e.stopPropagation()은 이벤트가 상위 요소로 전파되는 것을 중단합니다. / 이벤트 버블링을 중단하는 데 사용됩니다.
         e.preventDefault(); // e.preventDefault()는 이벤트의 기본 동작을 막습니다. / 주로 양식 제출, 링크 클릭, 드래그 앤 드롭 등의 기본 동작을 막는 데 사용됩니다.
+        console.log('클릭');
         if (followed) {
             unfollow.mutate(user.id);
         } else {

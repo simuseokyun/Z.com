@@ -148,13 +148,14 @@ export default function PostRecommends() {
             </div>
         );
     }
+    console.log(data, data?.pages);
 
     return (
         <>
             {data?.pages.map((page, i) => (
                 <Fragment key={i}>
-                    {page.map((post) => (
-                        <Post key={post.postId} post={post} />
+                    {page.map((post, z) => (
+                        <Post key={z} post={post} />
                     ))}
                 </Fragment>
             ))}
