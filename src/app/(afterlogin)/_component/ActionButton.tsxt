@@ -1,0 +1,209 @@
+const heart = useMutation({
+        mutationFn: () => {
+            return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/heart`, {
+                method: 'post',
+                credentials: 'include',
+            });
+        },
+        onMutate() {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((cache) => cache.queryKey);
+            console.log('queryKeys', queryKeys);
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    console.log(queryKey[0]);
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    if (value && 'pages' in value) {
+                        // 해당 경우는 인피니티쿼리일 경우
+                        console.log('array', value);
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            // 존재는 하는지
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+                            console.log('found index', index); // { ...value }만으로도 최상위 객체의 참조는 변합니다. 하지만 value.pages처럼 중첩된 객체나 배열의 참조는 여전히 원래 객체를 가리키기 때문에, 리렌더링이나 상태 관리를 위해서는 더 깊은 복사가 필요한 경우가 있습니다.
+
+                            // 스프레드 연산자로 객체의 참조를 변경할 수 있음. 이 경우 참조가 변경되었으므로 리액트는 상태가 변경되었다고 판단하여 리랜더링을 트리거함. 그러나 실제 DOM 업데이트는 없을 가능성이 큼.리액트는 상태 변경으로 인해 리렌더링을 트리거하지만, Virtual DOM을 비교한 후 실제 DOM 업데이트가 필요 없으면(값 변화 X) 효율적으로 이를 건너뜁니다.
+                            const shallow = { ...value };
+                            shallow.pages = { ...value.pages };
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts + 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    } else if (value) {
+                        // 해당 경우는 인피니트쿼리 X 싱글 포스트 일 경우
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...value._count,
+                                    Hearts: value._count.Hearts + 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+        onError() {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((cache) => cache.queryKey);
+            console.log('queryKeys', queryKeys);
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    if (value && 'pages' in value) {
+                        console.log('array', value);
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            // 존재는 하는지
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+                            console.log('found index', index);
+                            const shallow = { ...value };
+                            shallow.pages = { ...value.pages };
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: shallow.pages[pageIndex][index].Hearts.filter(
+                                    (v) => v.userId !== session?.user?.email
+                                ),
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts - 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    } else if (value) {
+                        // 싱글 포스트인 경우
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: value.Hearts.filter((v) => v.userId !== session?.user?.email),
+                                _count: {
+                                    ...value._count,
+                                    Hearts: value._count.Hearts - 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+        onSettled() {},
+    });
+
+    const unheart = useMutation({
+        mutationFn: () => {
+            return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/heart`, {
+                method: 'delete',
+                credentials: 'include',
+            });
+        },
+        onMutate() {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((cache) => cache.queryKey);
+            console.log('queryKeys', queryKeys);
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    if (value && 'pages' in value) {
+                        console.log('array', value);
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            // 존재는 하는지
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+                            console.log('found index', index);
+                            const shallow = { ...value };
+                            value.pages = { ...value.pages };
+                            value.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: shallow.pages[pageIndex][index].Hearts.filter(
+                                    (v) => v.userId !== session?.user?.email
+                                ),
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts - 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    } else if (value) {
+                        // 싱글 포스트인 경우
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: value.Hearts.filter((v) => v.userId !== session?.user?.email),
+                                _count: {
+                                    ...value._count,
+                                    Hearts: value._count.Hearts - 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+        onError() {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((cache) => cache.queryKey);
+            console.log('queryKeys', queryKeys);
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    console.log(queryKey[0]);
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    if (value && 'pages' in value) {
+                        console.log('array', value);
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            // 존재는 하는지
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+                            console.log('found index', index);
+                            const shallow = { ...value };
+                            value.pages = { ...value.pages };
+                            value.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts + 1,
+                                },
+                            };
+
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    } else if (value) {
+                        // 싱글 포스트인 경우
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...value._count,
+                                    Hearts: value._count.Hearts + 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+        onSettled() {},
+    });

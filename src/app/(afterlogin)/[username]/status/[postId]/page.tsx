@@ -1,6 +1,6 @@
-import BackButton from '@/app/(afterlogin)/_component/BackButton';
+import BackButton from '@/app/(afterLogin)/_component/BackButton';
 import style from './singlePost.module.css';
-import Post from '@/app/(afterlogin)/_component/Post';
+import Post from '@/app/(afterLogin)/_component/Post';
 import Comments from './_component/Comments';
 // import CommentForm from '@/app/(afterLogin)/[username]/status/[id]/_component/CommentForm';
 import { Metadata } from 'next';

@@ -4,7 +4,7 @@ import style from './signup.module.css';
 import onSubmit from '../_lib/signup';
 import { useFormStatus } from 'react-dom';
 import { useActionState } from 'react';
-import CloseButton from '@/app/(afterlogin)/_component/CloseButton';
+import CloseButton from '@/app/(afterLogin)/_component/CloseButton';
 
 function showMessage(message: string | null | undefined) {
     if (message === 'no_id') {

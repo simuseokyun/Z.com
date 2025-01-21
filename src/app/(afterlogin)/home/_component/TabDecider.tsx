@@ -1,6 +1,6 @@
 'use client';
 
-import { TabContext } from '@/app//(afterlogin)/home/_component/TabProvider';
+import { TabContext } from '@/app/(afterLogin)/home/_component/TabProvider';
 import PostRecommends from './PostRecommends';
 import FolloiwngPosts from './FollowingPosts';
 import { useTabState } from '@/store/tab';

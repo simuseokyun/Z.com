@@ -1,4 +1,4 @@
-import style from '@/app/(afterlogin)/_component/rightSearchZone.module.css';
+import style from '@/app/(afterLogin)/_component/rightSearchZone.module.css';
 
 type Props = { q?: string; pf?: string; f?: string };
 export default function SearchForm({ q, pf, f }: Props) {

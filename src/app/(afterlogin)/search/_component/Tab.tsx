@@ -1,5 +1,5 @@
 'use client';
-import style from '@/app/(afterlogin)/home/_component/tab.module.css';
+import style from '@/app/(afterLogin)/home/_component/tab.module.css';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';

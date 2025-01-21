@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getComments } from '../_lib/getComments';
-import Post from '@/app/(afterlogin)/_component/Post';
+import Post from '@/app/(afterLogin)/_component/Post';
 import { Post as IPost } from '@/model/Post';
 import { useQueryClient } from '@tanstack/react-query';
 type Props = {

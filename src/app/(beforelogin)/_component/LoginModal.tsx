@@ -4,7 +4,7 @@ import style from '@/app/(beforeLogin)/_component/login.module.css';
 import { ChangeEventHandler, FormEventHandler, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import CloseButton from '@/app/(afterlogin)/_component/CloseButton';
+import CloseButton from '@/app/(afterLogin)/_component/CloseButton';
 
 // 회원가입 모달은 useActionState와 서버액션을 활용하여 컴포넌트를 구성했고 로그인 모달은 useState를 활용해 구성햇음
 export default function LoginModal() {

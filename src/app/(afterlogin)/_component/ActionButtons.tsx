@@ -1,77 +1,363 @@
 'use client';
-import { useSession } from 'next-auth/react';
 import style from './post.module.css';
 import cx from 'classnames';
-import { Post } from '@/model/Post';
-import { useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
-import { useModalState } from '@/store/modal';
 import { MouseEventHandler } from 'react';
-import { InfiniteData } from '@tanstack/react-query';
+import { InfiniteData, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useSession } from 'next-auth/react';
+import { Post } from '@/model/Post';
+import { useRouter } from 'next/navigation';
+import { useModalState } from '@/store/modal';
 
 type Props = {
     white?: boolean;
     post: Post;
 };
 export default function ActionButtons({ white, post }: Props) {
-    const { data } = useSession();
-    const { setMode, setData } = useModalState();
-    const modalStore = useModalState();
-    const parent = modalStore.data;
-    const router = useRouter();
     const queryClient = useQueryClient();
-    // useQueryClient()는 React Query에서 QueryClient 인스턴스를 가져오는 훅입니다. 이 훅은 React Query의 캐시와 관련된 여러 작업을 수행하는 데 사용됩니다. useQueryClient()를 통해 React Query의 Query Client를 직접 다룰 수 있으며, 이를 통해 쿼리 데이터를 가져오거나, 업데이트하거나, 무효화하는 등의 다양한 작업을 할 수 있습니다.
+    const router = useRouter();
+    const { data: session } = useSession();
 
-    // 1. getQueryData(안에 쿼리키 넣어줘야 함)
-    // 설명: 주어진 쿼리 키에 해당하는 데이터를 반환합니다.
+    const modalStore = useModalState();
+    const reposted = !!post.Reposts?.find((v) => v.userId === session?.user?.email);
+    const liked = !!post.Hearts?.find((v) => v.userId === session?.user?.email);
+    const { postId } = post;
+    // console.log(`리포스트는 ${reposted} liked는 ${liked}`);
 
-    // 2. setQueryData(쿼리키,수정할 데이터 넣어주기)
-    // 설명: 특정 쿼리 키에 데이터를 설정합니다. 주로 쿼리 데이터를 수동으로 업데이트할 때 사용합니다.
-
-    // 3.invalidateQueries(쿼리키)
-    // 설명: 특정 쿼리 키 또는 쿼리 키 패턴에 해당하는 모든 쿼리를 무효화하고, 재요청하도록 설정합니다. 보통 쿼리 데이터를 변경한 후 이를 다시 가져오도록 할 때 사용합니다. queryClient.invalidateQueries(["쿼리키"])
-    const commented = !!post?.Comments?.find((comment) => comment.userId === data?.user?.id);
-    const reposted = !!post?.Reposts?.find((Repost) => Repost.userId === data?.user?.id);
-    const liked = !!post?.Hearts?.find((v) => v.userId === data?.user?.email);
-
-    const Heart = useMutation({
-        mutationFn: () => {
-            return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${post.postId}/heart`, {
+    const repost = useMutation({
+        mutationFn: async () => {
+            return await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/reposts`, {
                 method: 'post',
                 credentials: 'include',
             });
         },
-        onMutate() {
-            const queryCache = queryClient.getQueryCache(); // getQueryCache는 모든 쿼리값 가져오는 메서드
-            const queryKeys = queryCache.getAll().map((cache) => cache.queryKey);
-            console.log(queryKeys);
-            queryKeys.forEach((queryKey, i) => {
-                if (queryKey[0] === 'posts') {
-                    console.log(queryKey);
-                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+
+        async onSuccess(response) {
+            const res = await response.json();
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((v) => {
+                return v.queryKey;
+            });
+            queryKeys.forEach((v) => {
+                if (v[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(v);
+                    if (value && 'pages' in value) {
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+                            const shallow = { ...value };
+                            shallow.pages = [...value.pages];
+                            shallow.pages[pageIndex] = { ...value.pages[pageIndex] };
+                            shallow.pages[pageIndex][index] = {
+                                ...value.pages[pageIndex][index],
+                                Reposts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...value.pages[pageIndex][index]._count,
+                                    Reposts: value.pages[pageIndex][index]._count.Reposts + 1,
+                                },
+                            };
+                            shallow.pages[0].unshift(res);
+
+                            queryClient.setQueryData(v, shallow);
+                        }
+                    } else if (value) {
+                        // 싱글 포스트인 경우
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...value._count,
+                                    Hearts: value._count.Hearts + 1,
+                                },
+                            };
+                            queryClient.setQueryData(v, shallow);
+                        }
+                    }
                 }
             });
         },
-        onError() {},
     });
+    const deleteRepost = useMutation({
+        mutationFn: async () => {
+            return await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/reposts`, {
+                method: 'delete',
+                credentials: 'include',
+            });
+        },
+
+        onSuccess(response) {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((v) => {
+                return v.queryKey;
+            });
+            queryKeys.forEach((v) => {
+                if (v[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(v);
+                    if (value && 'pages' in value) {
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        const repost = value.pages
+                            .flat()
+                            .find((v) => v.Original?.postId === postId && v.User.id === session?.user?.email);
+                        if (obj) {
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+                            const shallow = { ...value };
+                            shallow.pages = [...value.pages];
+                            shallow.pages[pageIndex] = { ...value.pages[pageIndex] };
+                            shallow.pages[pageIndex][index] = {
+                                ...value.pages[pageIndex][index],
+                                Reposts: shallow.pages[pageIndex][index].Reposts.filter(
+                                    (v) => v.userId !== session?.user?.email
+                                ),
+                                _count: {
+                                    ...value.pages[pageIndex][index]._count,
+                                    Reposts: value.pages[pageIndex][index]._count.Reposts - 1,
+                                },
+                            };
+                            shallow.pages = shallow.pages.map((page) => {
+                                return page.filter((v) => v.postId !== repost?.postId);
+                            });
+                            queryClient.setQueryData(v, shallow);
+                        }
+                    } else if (value) {
+                        // 싱글 포스트인 경우
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...value._count,
+                                    Hearts: value._count.Hearts + 1,
+                                },
+                            };
+                            queryClient.setQueryData(v, shallow);
+                        }
+                    }
+                }
+            });
+        },
+    });
+    const heart = useMutation({
+        mutationFn: async () => {
+            // fetch는 기본적으로 promise를 사용하기 때문에 await 사용하는 것이 일반적
+            return await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/heart`, {
+                method: 'post',
+                credentials: 'include',
+                cache: 'no-cache',
+            });
+        },
+        onMutate() {
+            console.log('뮤테이트 실행중임');
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((v) => v.queryKey);
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    console.log('posts 있음');
+
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    const 잠깐만 = queryClient.getQueryData(['posts', 'recommends']);
+
+                    console.log(value, 잠깐만);
+                    if (value && 'pages' in value) {
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            console.log('찾았음');
+
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+
+                            const shallow = { ...value };
+                            shallow.pages = [...value.pages];
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts + 1,
+                                },
+                            };
+                            console.log('페이지인덱스찾음', pageIndex, index);
+                            console.log(queryKey, shallow);
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    } else if (value) {
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: { ...value._count, Hearts: value._count.Hearts + 1 },
+                            };
+                            console.log(queryKey, shallow);
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+        onError(error) {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((v) => v.queryKey);
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    console.log(value);
+                    if (value && 'pages' in value) {
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+
+                            const shallow = { ...value };
+                            shallow.pages = [...value.pages];
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: shallow.pages[pageIndex][index].Hearts.filter(
+                                    (v) => v.userId !== session?.user?.email
+                                ),
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts - 1,
+                                },
+                            };
+                        }
+                    } else if (value) {
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: value.Hearts.filter((v) => v.userId !== (session?.user?.email as string)),
+                                _count: { ...value._count, Hearts: value._count.Hearts - 1 },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+    });
+    const unHeart = useMutation({
+        mutationFn: async () => {
+            // fetch는 기본적으로 promise를 사용하기 때문에 await 사용하는 것이 일반적
+            return await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/heart`, {
+                method: 'delete',
+                credentials: 'include',
+                cache: 'no-cache',
+            });
+        },
+        onMutate() {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((v) => v.queryKey);
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    console.log(value);
+                    if (value && 'pages' in value) {
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+
+                            const shallow = { ...value };
+                            shallow.pages = [...value.pages];
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: shallow.pages[pageIndex][index].Hearts.filter(
+                                    (v) => v.userId !== session?.user?.email
+                                ),
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts - 1,
+                                },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    } else if (value) {
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: value.Hearts.filter((v) => v.userId !== (session?.user?.email as string)),
+                                _count: { ...value._count, Hearts: value._count.Hearts - 1 },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+        onError(error) {
+            const queryCache = queryClient.getQueryCache();
+            const queryKeys = queryCache.getAll().map((v) => v.queryKey);
+
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
+                    console.log(value);
+                    if (value && 'pages' in value) {
+                        const obj = value.pages.flat().find((v) => v.postId === postId);
+                        if (obj) {
+                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+
+                            const shallow = { ...value };
+                            shallow.pages = [...value.pages];
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
+                            shallow.pages[pageIndex][index] = {
+                                ...shallow.pages[pageIndex][index],
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: {
+                                    ...shallow.pages[pageIndex][index]._count,
+                                    Hearts: shallow.pages[pageIndex][index]._count.Hearts + 1,
+                                },
+                            };
+                        }
+                    } else if (value) {
+                        if (value.postId === postId) {
+                            const shallow = {
+                                ...value,
+                                Hearts: [{ userId: session?.user?.email as string }],
+                                _count: { ...value._count, Hearts: value._count.Hearts + 1 },
+                            };
+                            queryClient.setQueryData(queryKey, shallow);
+                        }
+                    }
+                }
+            });
+        },
+    });
+
     const onClickComment: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
-        setMode('댓글');
-        setData(post);
+        modalStore.setMode('댓글');
+        modalStore.setData(post);
         router.push('/compose/tweet');
     };
-    const onClickRepost: MouseEventHandler<HTMLButtonElement> = (e) => e.stopPropagation();
-    {
-    }
+
+    const onClickRepost: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!reposted) {
+            repost.mutate();
+        } else {
+            deleteRepost.mutate();
+        }
+    };
     const onClickHeart: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
-        Heart.mutate();
+        console.log('heart클릭');
+        console.log(liked);
+        if (!liked) {
+            heart.mutate();
+        } else {
+            unHeart.mutate();
+        }
     };
 
     return (
         <div className={style.actionButtons}>
-            <div className={cx(style.commentButton, { [style.commented]: commented }, white && style.white)}>
+            <div className={cx(style.commentButton, white && style.white)}>
                 <button onClick={onClickComment}>
                     <svg width={24} viewBox="0 0 24 24" aria-hidden="true">
                         <g>
@@ -79,7 +365,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{post?._count?.Comments}</div>
+                <div className={style.count}>{post._count?.Comments || ''}</div>
             </div>
             <div className={cx(style.repostButton, reposted && style.reposted, white && style.white)}>
                 <button onClick={onClickRepost}>
@@ -89,7 +375,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{post?._count?.Reposts}</div>
+                <div className={style.count}>{post._count?.Reposts || ''}</div>
             </div>
             <div className={cx([style.heartButton, liked && style.liked, white && style.white])}>
                 <button onClick={onClickHeart}>
@@ -99,7 +385,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{post?._count?.Hearts}</div>
+                <div className={style.count}>{post._count?.Hearts || ''}</div>
             </div>
         </div>
     );

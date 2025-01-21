@@ -12,9 +12,7 @@ import Link from 'next/link';
 import { Post } from '@/model/Post';
 import { InfiniteData } from '@tanstack/react-query';
 export default function TweetModal() {
-    const modalStore = useModalState();
-    console.log(modalStore);
-    const parent = modalStore.data;
+    const { data: modal, mode, setData, setMode, reset } = useModalState();
     const 글쓰기 = useMutation({
         mutationFn: async (e: FormEvent) => {
             e.preventDefault();
@@ -45,14 +43,14 @@ export default function TweetModal() {
                     const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(key);
                     console.log(value);
                     if (value && 'pages' in value) {
-                        const obj = value.pages.flat().find((v) => v.postId === parent?.postId);
+                        const obj = value.pages.flat().find((v) => v.postId === modal?.postId);
 
                         console.log(obj);
 
                         if (obj) {
                             // 존재는 하는지
                             const pageIndex = value.pages.findIndex((page) => page.includes(obj));
-                            const index = value.pages[pageIndex].findIndex((v) => v.postId === parent?.postId);
+                            const index = value.pages[pageIndex].findIndex((v) => v.postId === modal?.postId);
                             console.log('found index', index);
                             const shallow = {
                                 ...value,
@@ -91,10 +89,11 @@ export default function TweetModal() {
     };
     const onClickClose = () => {
         router.back();
+        reset();
     };
     const onUpload: ChangeEventHandler<HTMLInputElement> = (e) => {
         e.preventDefault();
-        console.log('업로드');
+
         if (e.target.files) {
             Array.from(e.target.files).forEach((file, index) => {
                 const reader = new FileReader();
@@ -139,20 +138,20 @@ export default function TweetModal() {
                     </svg>
                 </button>
                 <form className={style.modalForm} onSubmit={글쓰기.mutate}>
-                    {modalStore.mode === '새로운글' && parent && (
+                    {mode === '댓글' && modal && (
                         <div className={style.modalOriginal}>
                             <div className={style.postUserSection}>
                                 <div className={style.postUserImage}>
-                                    <img src={parent.User.image} alt={parent.User.id} />
+                                    <img src={modal.User.image} alt={modal.User.id} />
                                 </div>
                             </div>
                             <div>
-                                {parent.content}
+                                {modal.content}
                                 <div>
-                                    <Link href={`/${parent.User.id}`} style={{ color: 'rgb(29, 155, 240)' }}>
-                                        @{parent.User.id}
+                                    <Link href={`/${modal.User.id}`} style={{ color: 'rgb(29, 155, 240)' }}>
+                                        @{modal.User.id}
                                     </Link>
-                                    {parent.User.id}
+                                    {modal.User.id}
                                     님에게 보내는 답글
                                 </div>
                             </div>
