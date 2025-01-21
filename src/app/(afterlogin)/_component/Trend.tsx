@@ -8,6 +8,7 @@ export default function Trend({ trend }: { trend: { title: string; count: number
             # => %23 으로 바꿔주는 함수 */}
             <div className={style.title}>{trend.title}</div>
             <div className={style.count}>{trend.title}</div>
+            <div className={style.count}>{trend.count} posts</div>
         </Link>
     );
 }

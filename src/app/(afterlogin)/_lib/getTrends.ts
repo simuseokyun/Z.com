@@ -8,6 +8,11 @@ export async function getTrends() {
 
         credentials: 'include', // 사용자의 인증 정보를 포함하여 요청을 전송하도록 설정합니다 (쿠키)
         cache: 'no-store', // 사실 next15 부터는 no-store 가 기본값이 되어서 명시 안해줘도 됨
+
+        // headers: {
+        //     Cookie: (await cookies()).toString(),
+        //     Cookie 넣어야 되는 경우는 쿠키가 없는 상태에서 서버 인증이 필요한 경우, 서버 함수에서 보내줘야 함
+        // },
     });
 
     if (!res.ok) {
