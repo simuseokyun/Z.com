@@ -16,10 +16,13 @@ export default function ActionButtons({ white, post }: Props) {
     const queryClient = useQueryClient();
     const router = useRouter();
     const { data: session } = useSession();
-
+    let target = post;
+    if (post.Original) {
+        target = post.Original;
+    }
     const modalStore = useModalState();
-    const reposted = !!post.Reposts?.find((v) => v.userId === session?.user?.email);
-    const liked = !!post.Hearts?.find((v) => v.userId === session?.user?.email);
+    const reposted = !!target.Reposts?.find((v) => v.userId === session?.user?.email);
+    const liked = !!target.Hearts?.find((v) => v.userId === session?.user?.email);
     const { postId } = post;
     // console.log(`리포스트는 ${reposted} liked는 ${liked}`);
 
@@ -37,42 +40,43 @@ export default function ActionButtons({ white, post }: Props) {
             const queryKeys = queryCache.getAll().map((v) => {
                 return v.queryKey;
             });
+
             queryKeys.forEach((v) => {
                 if (v[0] === 'posts') {
-                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(v);
+                    const value: Post[] | InfiniteData<Post[]> | undefined = queryClient.getQueryData(v);
                     if (value && 'pages' in value) {
                         const obj = value.pages.flat().find((v) => v.postId === postId);
                         if (obj) {
                             const pageIndex = value.pages.findIndex((page) => page.includes(obj));
                             const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
+                            console.log(obj, pageIndex, index);
+                            console.log(value);
                             const shallow = { ...value };
+                            console.log(shallow);
                             shallow.pages = [...value.pages];
-                            shallow.pages[pageIndex] = { ...value.pages[pageIndex] };
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
                             shallow.pages[pageIndex][index] = {
                                 ...value.pages[pageIndex][index],
                                 Reposts: [{ userId: session?.user?.email as string }],
                                 _count: {
                                     ...value.pages[pageIndex][index]._count,
-                                    Reposts: value.pages[pageIndex][index]._count.Reposts + 1,
+                                    Reposts: 10,
                                 },
                             };
-                            shallow.pages[0].unshift(res);
 
+                            shallow.pages[0].unshift(res);
                             queryClient.setQueryData(v, shallow);
                         }
                     } else if (value) {
                         // 싱글 포스트인 경우
-                        if (value.postId === postId) {
-                            const shallow = {
-                                ...value,
-                                Hearts: [{ userId: session?.user?.email as string }],
-                                _count: {
-                                    ...value._count,
-                                    Hearts: value._count.Hearts + 1,
-                                },
-                            };
-                            queryClient.setQueryData(v, shallow);
-                        }
+                        const index = value.findIndex((v) => v.postId === postId);
+                        const shallow = [...value];
+                        shallow[index] = {
+                            ...value[index],
+                            Reposts: [{ userId: session?.user?.email as string }],
+                            _count: { ...shallow[index]._count, Reposts: shallow[index]._count.Reposts + 1 },
+                        };
+                        queryClient.setQueryData(v, shallow);
                     }
                 }
             });
@@ -91,9 +95,10 @@ export default function ActionButtons({ white, post }: Props) {
             const queryKeys = queryCache.getAll().map((v) => {
                 return v.queryKey;
             });
+            console.log('리포스트해제');
             queryKeys.forEach((v) => {
                 if (v[0] === 'posts') {
-                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(v);
+                    const value: Post[] | InfiniteData<Post[]> | undefined = queryClient.getQueryData(v);
                     if (value && 'pages' in value) {
                         const obj = value.pages.flat().find((v) => v.postId === postId);
                         const repost = value.pages
@@ -103,8 +108,9 @@ export default function ActionButtons({ white, post }: Props) {
                             const pageIndex = value.pages.findIndex((page) => page.includes(obj));
                             const index = value.pages[pageIndex].findIndex((v) => v.postId === postId);
                             const shallow = { ...value };
+                            console.log(shallow);
                             shallow.pages = [...value.pages];
-                            shallow.pages[pageIndex] = { ...value.pages[pageIndex] };
+                            shallow.pages[pageIndex] = [...value.pages[pageIndex]];
                             shallow.pages[pageIndex][index] = {
                                 ...value.pages[pageIndex][index],
                                 Reposts: shallow.pages[pageIndex][index].Reposts.filter(
@@ -118,21 +124,21 @@ export default function ActionButtons({ white, post }: Props) {
                             shallow.pages = shallow.pages.map((page) => {
                                 return page.filter((v) => v.postId !== repost?.postId);
                             });
+                            console.log(shallow);
                             queryClient.setQueryData(v, shallow);
                         }
                     } else if (value) {
                         // 싱글 포스트인 경우
-                        if (value.postId === postId) {
-                            const shallow = {
-                                ...value,
-                                Hearts: [{ userId: session?.user?.email as string }],
-                                _count: {
-                                    ...value._count,
-                                    Hearts: value._count.Hearts + 1,
-                                },
-                            };
-                            queryClient.setQueryData(v, shallow);
-                        }
+                        const index = value.findIndex((v) => v.postId === postId);
+                        const shallow = [...value];
+                        shallow[index] = {
+                            ...value[index],
+                            Reposts: value[index].Reposts.filter((v) => v.userId !== (session?.user?.email as string)),
+                            _count: { ...shallow[index]._count, Reposts: shallow[index]._count.Reposts - 1 },
+                        };
+                        const hi = shallow.filter((v) => v.postId !== postId);
+                        console.log(hi);
+                        queryClient.setQueryData(v, hi);
                     }
                 }
             });
@@ -158,7 +164,6 @@ export default function ActionButtons({ white, post }: Props) {
                     const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
                     const 잠깐만 = queryClient.getQueryData(['posts', 'recommends']);
 
-                    console.log(value, 잠깐만);
                     if (value && 'pages' in value) {
                         const obj = value.pages.flat().find((v) => v.postId === postId);
                         if (obj) {
@@ -183,6 +188,7 @@ export default function ActionButtons({ white, post }: Props) {
                             queryClient.setQueryData(queryKey, shallow);
                         }
                     } else if (value) {
+                        console.log(Array.isArray(value), post);
                         if (value.postId === postId) {
                             const shallow = {
                                 ...value,
@@ -338,6 +344,9 @@ export default function ActionButtons({ white, post }: Props) {
     const onClickRepost: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
         e.preventDefault();
+        if (post.Original) {
+            return;
+        }
         if (!reposted) {
             repost.mutate();
         } else {
@@ -346,8 +355,10 @@ export default function ActionButtons({ white, post }: Props) {
     };
     const onClickHeart: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.stopPropagation();
-        console.log('heart클릭');
-        console.log(liked);
+
+        if (post.Original) {
+            return;
+        }
         if (!liked) {
             heart.mutate();
         } else {
@@ -365,7 +376,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{post._count?.Comments || ''}</div>
+                <div className={style.count}>{target._count?.Comments || ''}</div>
             </div>
             <div className={cx(style.repostButton, reposted && style.reposted, white && style.white)}>
                 <button onClick={onClickRepost}>
@@ -375,7 +386,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{post._count?.Reposts || ''}</div>
+                <div className={style.count}>{target._count?.Reposts || ''}</div>
             </div>
             <div className={cx([style.heartButton, liked && style.liked, white && style.white])}>
                 <button onClick={onClickHeart}>
@@ -385,7 +396,7 @@ export default function ActionButtons({ white, post }: Props) {
                         </g>
                     </svg>
                 </button>
-                <div className={style.count}>{post._count?.Hearts || ''}</div>
+                <div className={style.count}>{target._count?.Hearts || ''}</div>
             </div>
         </div>
     );

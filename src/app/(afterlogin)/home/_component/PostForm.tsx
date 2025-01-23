@@ -34,6 +34,7 @@ export default function PostForm({ me }: Props) {
         },
         async onSuccess(response, variable, context) {
             const newPost = await response.json();
+            console.log(newPost);
             setContent('');
             setPreview([]);
             if (queryClient.getQueryData(['posts', 'recommends'])) {
@@ -48,13 +49,11 @@ export default function PostForm({ me }: Props) {
                 });
             }
             if (queryClient.getQueryData(['posts', 'followings'])) {
-                queryClient.setQueryData(['posts', 'followings'], (prevData: { pages: Post[][] }) => {
-                    const shallow = {
-                        ...prevData,
-                        pages: [...prevData.pages],
-                    };
-                    shallow.pages[0] = [...shallow.pages[0]];
-                    shallow.pages[0].unshift(newPost);
+                queryClient.setQueryData(['posts', 'followings'], (prevData: Post[]) => {
+                    const shallow = [...prevData];
+                    console.log(newPost, shallow);
+
+                    shallow.unshift(newPost);
                     return shallow;
                 });
             }
