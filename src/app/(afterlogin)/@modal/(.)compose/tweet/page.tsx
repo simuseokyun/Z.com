@@ -12,60 +12,42 @@ import Link from 'next/link';
 import { Post } from '@/model/Post';
 import { InfiniteData } from '@tanstack/react-query';
 export default function TweetModal() {
-    const { data: modal, mode, setData, setMode, reset } = useModalState();
-    const 글쓰기 = useMutation({
+    const { data: modal, mode, reset } = useModalState();
+    const parent = modal;
+    const mutation = useMutation({
         mutationFn: async (e: FormEvent) => {
             e.preventDefault();
             const formData = new FormData();
             formData.append('content', content);
             preview.forEach((p) => {
-                if (p) {
-                    formData.append('images', p.file);
-                }
+                p && formData.append('images', p.file);
             });
-            return await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`, {
-                method: 'POST',
+            return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`, {
+                method: 'post',
                 credentials: 'include',
                 body: formData,
             });
         },
-        async onSuccess(response, variable) {
-            const newPost = await response.json();
-            setContent('');
-            setPreview([]);
+        async onSuccess(res) {
+            const newPost = await res.json();
+            console.log(newPost);
             const queryCache = queryClient.getQueryCache();
-            const queryKeys = queryCache.getAll().map((cache) => {
-                return cache.queryKey;
-            });
-
-            queryKeys.forEach((key) => {
-                if (key[0] === 'posts') {
-                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(key);
+            const queryKeys = queryCache.getAll().map((v) => v.queryKey);
+            // getAll()메서드를 통해 queryCache를 배열로 만들어줌
+            queryKeys.forEach((queryKey) => {
+                if (queryKey[0] === 'posts') {
+                    const value: Post | InfiniteData<Post[]> | undefined = queryClient.getQueryData(queryKey);
                     console.log(value);
                     if (value && 'pages' in value) {
-                        const obj = value.pages.flat().find((v) => v.postId === modal?.postId);
-
-                        console.log(obj);
-
-                        if (obj) {
-                            // 존재는 하는지
-                            const pageIndex = value.pages.findIndex((page) => page.includes(obj));
-                            const index = value.pages[pageIndex].findIndex((v) => v.postId === modal?.postId);
-                            console.log('found index', index);
-                            const shallow = {
-                                ...value,
-                                pages: [...value.pages],
-                            };
-                            shallow.pages[0] = [...shallow.pages[0]];
-                            shallow.pages[0].unshift(newPost); // 새 게시글 추가
-                            console.log(shallow);
-                            queryClient.setQueryData(key, shallow);
-                        }
+                        const shallow = {
+                            ...value,
+                            pages: [...value.pages],
+                        };
+                        shallow.pages[0] = [...shallow.pages[0]];
+                        shallow.pages[0].unshift(newPost); // 새 게시글 추가
+                        queryClient.setQueryData(queryKey, shallow);
                     }
                 }
-            });
-            await queryClient.invalidateQueries({
-                queryKey: ['trends'],
             });
         },
         onError(error) {
@@ -137,7 +119,7 @@ export default function TweetModal() {
                         </g>
                     </svg>
                 </button>
-                <form className={style.modalForm} onSubmit={글쓰기.mutate}>
+                <form className={style.modalForm} onSubmit={mutation.mutate}>
                     {mode === '댓글' && modal && (
                         <div className={style.modalOriginal}>
                             <div className={style.postUserSection}>
