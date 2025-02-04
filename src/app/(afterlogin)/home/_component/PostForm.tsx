@@ -37,26 +37,32 @@ export default function PostForm({ me }: Props) {
             console.log(newPost);
             setContent('');
             setPreview([]);
-            if (queryClient.getQueryData(['posts', 'recommends'])) {
-                queryClient.setQueryData(['posts', 'recommends'], (prevData: { pages: Post[][] }) => {
-                    const shallow = {
-                        ...prevData,
-                        pages: [...prevData.pages],
-                    };
-                    shallow.pages[0] = [...shallow.pages[0]];
-                    shallow.pages[0].unshift(newPost);
-                    return shallow;
-                });
-            }
-            if (queryClient.getQueryData(['posts', 'followings'])) {
-                queryClient.setQueryData(['posts', 'followings'], (prevData: Post[]) => {
-                    const shallow = [...prevData];
-                    console.log(newPost, shallow);
 
-                    shallow.unshift(newPost);
-                    return shallow;
-                });
-            }
+            const recommend = queryClient.getQueryData(['posts', 'recommends']);
+            const follow = queryClient.getQueryData(['posts', 'followings']);
+            console.log(recommend, follow);
+            // if (queryClient.getQueryData(['posts', 'recommends'])) {
+            //     queryClient.setQueryData(['posts', 'recommends'], (prevData: { pages: Post[][] }) => {
+            //         const shallow = {
+            //             ...prevData,
+            //             pages: [...prevData.pages],
+            //         };
+            //         shallow.pages[0] = [...shallow.pages[0]];
+            //         shallow.pages[0].unshift(newPost);
+            //         return shallow;
+            //     });
+            // }
+            // if (queryClient.getQueryData(['posts', 'followings'])) {
+            //     queryClient.setQueryData(['posts', 'followings'], (prevData: { pages: Post[][] }) => {
+            //         const shallow = {
+            //             ...prevData,
+            //             pages: [...prevData.pages],
+            //         };
+            //         shallow.pages[0] = [...shallow.pages[0]];
+            //         shallow.pages[0].unshift(newPost);
+            //         return shallow;
+            //     });
+            // }
         },
         onError(error) {
             console.error(error);
