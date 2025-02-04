@@ -33,7 +33,7 @@ export default async function AfterLoginLayout({ children, modal }: Props) {
 
                         <nav>
                             <ul>
-                                <NavMenu />
+                                <NavMenu me={session} />
                             </ul>
                             <Link href="/compose/tweet" className={style.postButton}>
                                 <span>게시하기</span>

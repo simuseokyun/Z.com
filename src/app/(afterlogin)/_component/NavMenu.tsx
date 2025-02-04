@@ -3,10 +3,13 @@ import { useSelectedLayoutSegment } from 'next/navigation';
 import Link from 'next/link';
 import style from './navMenu.module.css';
 import { useSession } from 'next-auth/react';
+import { Session } from 'next-auth';
 
-export default function NavMenu() {
+type Props = {
+    me: Session | null;
+};
+export default function NavMenu({ me }: Props) {
     const segment = useSelectedLayoutSegment();
-    const { data: me } = useSession();
 
     return (
         <>
