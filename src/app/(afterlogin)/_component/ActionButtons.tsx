@@ -60,7 +60,7 @@ export default function ActionButtons({ white, post }: Props) {
                                 Reposts: [{ userId: session?.user?.email as string }],
                                 _count: {
                                     ...value.pages[pageIndex][index]._count,
-                                    Reposts: 10,
+                                    Reposts: shallow.pages[pageIndex][index]._count.Reposts + 1,
                                 },
                             };
 

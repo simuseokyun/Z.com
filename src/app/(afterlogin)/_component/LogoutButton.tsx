@@ -16,7 +16,7 @@ export default function LogoutButton({ me }: Props) {
             router.replace('/');
         });
     };
-
+ // 경고창
     if (!me?.user) {
         return null;
     }
