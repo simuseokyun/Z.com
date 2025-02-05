@@ -1,117 +1,117 @@
 .main {
-    width: 600px;
-    border-color: rgb(239, 243, 244);
-    border-right-width: 1px;
-    border-left-width: 1px;
-    border-left-style: solid;
-    border-right-style: solid;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
+  width: 600px;
+  border-color: rgb(239, 243, 244);
+  border-right-width: 1px;
+  border-left-width: 1px;
+  border-left-style: solid;
+  border-right-style: solid;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .header {
-    display: flex;
-    height: 53px;
-    align-items: center;
+  display: flex;
+  height: 53px;
+  align-items: center;
 }
 
 .headerTitle {
-    font-size: 20px;
-    font-weight: bold;
-    margin-left: 30px;
+  font-size: 20px;
+  font-weight: bold;
+  margin-left: 30px;
 }
 
 .userZone {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 
-    border-bottom: 1px solid rgb(239, 243, 244);
-    padding: 12px 16px;
+  border-bottom: 1px solid rgb(239, 243, 244);
+  padding: 12px 16px;
 }
 
 .userRow {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 .userFollower {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    padding-top: 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding-top: 8px;
 }
 
 .userImage {
-    display: flex;
-    align-items: center;
-    margin-right: 12px;
-    border-radius: 50%;
+  display: flex;
+  align-items: center;
+  margin-right: 12px;
+  border-radius: 50%;
 }
 .userImage img {
-    width: 134px;
-    height: 134px;
-    border-radius: 50%;
+  width: 134px;
+  height: 134px;
+  border-radius: 50%;
 }
 .userName {
-    margin: 0 12px;
-    flex: 1;
-    display: flex;
-    align-items: center;
+  margin: 0 12px;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .userName > div > div:first-child {
-    font-weight: bold;
-    font-size: 20px;
+  font-weight: bold;
+  font-size: 20px;
 }
 .userName > div > div:last-child {
-    font-size: 15px;
+  font-size: 15px;
 }
 
 .messageButton {
-    border: 1px solid #cfd9de;
-    width: 34px;
-    height: 34px;
-    border-radius: 17px;
-    margin-left: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: white;
+  border: 1px solid #cfd9de;
+  width: 34px;
+  height: 34px;
+  border-radius: 17px;
+  margin-left: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
 }
 .followButton {
-    border: 1px solid rgb(207, 217, 222);
-    padding: 0 16px;
-    border-radius: 17px;
-    height: 34px;
-    margin-left: 5px;
-    background-color: #000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 15px;
-    color: white;
-    cursor: pointer;
+  border: 1px solid rgb(207, 217, 222);
+  padding: 0 16px;
+  border-radius: 17px;
+  height: 34px;
+  margin-left: 5px;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: white;
+  cursor: pointer;
 }
 /* .followButton:hover {
     background-color: rgb(39, 44, 48);
 } */
 .following {
-    background-color: #eee;
-    color: black;
+  background-color: #eee;
+  color: black;
 }
 
 .backButton {
-    width: 34px;
-    height: 34px;
-    background-color: #fff;
-    border: none;
-    border-radius: 17px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  width: 34px;
+  height: 34px;
+  background-color: #fff;
+  border: none;
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
 }
 .backButton:hover {
-    background-color: rgba(15, 20, 25, 0.1);
+  background-color: rgba(15, 20, 25, 0.1);
 }
