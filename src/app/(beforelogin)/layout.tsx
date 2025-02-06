@@ -1,8 +1,9 @@
-import styles from "@/app/(beforeLogin)/_component/main.module.css";
+import styles from '@/app/(beforeLogin)/_component/main.module.css'
+
 type Props = {
-  children: React.ReactNode;
-  modal: React.ReactNode;
-};
+  children: React.ReactNode
+  modal: React.ReactNode
+}
 
 export default function Layout({ children, modal }: Props) {
   return (
@@ -12,5 +13,5 @@ export default function Layout({ children, modal }: Props) {
       {modal}
       {/* 로그인을 누를 경우 @modal/i/flow/login의 page가 modal영역에 들어감 */}
     </div>
-  );
+  )
 }

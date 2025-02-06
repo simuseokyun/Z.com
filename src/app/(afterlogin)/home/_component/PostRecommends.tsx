@@ -87,15 +87,17 @@
 //         </>
 //     );
 // }
-"use client";
 
-import { InfiniteData, useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { getPostRecommends } from "../_lib/getPostRecommend";
-import Post from "@/app/(afterLogin)/_component/Post";
-import { Post as IPost } from "@/model/Post";
-import { Fragment, useEffect } from "react";
-import { useInView } from "react-intersection-observer";
-import styles from "@/app/(afterLogin)/home/home.module.css";
+'use client'
+
+import { InfiniteData, useSuspenseInfiniteQuery } from '@tanstack/react-query'
+import Post from '@/app/(afterLogin)/_component/Post'
+import { Post as IPost } from '@/model/Post'
+import { Fragment, useEffect } from 'react'
+import { useInView } from 'react-intersection-observer'
+import styles from '@/app/(afterLogin)/home/home.module.css'
+
+import { getPostRecommends } from '../_lib/getPostRecommend'
 
 export default function PostRecommends() {
   const { data, hasNextPage, fetchNextPage, isFetching, isPending } =
@@ -106,40 +108,42 @@ export default function PostRecommends() {
       [_1: string, _2: string],
       number
     >({
-      queryKey: ["posts", "recommends"],
+      queryKey: ['posts', 'recommends'],
       queryFn: getPostRecommends,
       initialPageParam: 0,
       getNextPageParam: (lastPage) => lastPage.at(-1)?.postId,
       staleTime: 60 * 1000,
       gcTime: 120 * 1000,
       // staleTime/gcTime 명시하지않으면 계속 데이터 요청
-    });
+    })
 
   const { ref, inView } = useInView({
     threshold: 0, // 얼마정도 드러나야 실행할건지 0 ~ 1 사이값
     delay: 0,
-  });
+  })
 
   useEffect(() => {
     if (inView) {
-      !isFetching && hasNextPage && fetchNextPage();
+      !isFetching && hasNextPage && fetchNextPage()
     }
-  }, [inView, isFetching, hasNextPage, fetchNextPage]);
+  }, [inView, isFetching, hasNextPage, fetchNextPage])
 
   if (isPending) {
     return (
       <div
         style={{
-          display: "flex",
+          display: 'flex',
           flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}>
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         <svg
           className={styles.loader}
           height="100%"
           viewBox="0 0 32 32"
-          width={40}>
+          width={40}
+        >
           <circle
             cx="16"
             cy="16"
@@ -147,9 +151,10 @@ export default function PostRecommends() {
             r="14"
             strokeWidth="4"
             style={{
-              stroke: "rgb(29, 155, 240)",
+              stroke: 'rgb(29, 155, 240)',
               opacity: 0.2,
-            }}></circle>
+            }}
+          />
           <circle
             cx="16"
             cy="16"
@@ -157,15 +162,16 @@ export default function PostRecommends() {
             r="14"
             strokeWidth="4"
             style={{
-              stroke: "rgb(29, 155, 240)",
+              stroke: 'rgb(29, 155, 240)',
               strokeDasharray: 80,
               strokeDashoffset: 60,
-            }}></circle>
+            }}
+          />
         </svg>
       </div>
-    );
+    )
   }
-  console.log(data, data?.pages);
+  console.log(data, data?.pages)
 
   return (
     <>
@@ -178,5 +184,5 @@ export default function PostRecommends() {
       ))}
       <div ref={ref} style={{ height: 50 }} />
     </>
-  );
+  )
 }

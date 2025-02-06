@@ -1,6 +1,7 @@
-import LoginModal from "@/app/(beforeLogin)/_component/LoginModal";
+import LoginModal from '@/app/(beforeLogin)/_component/LoginModal'
+
 export default function Page() {
-  return <LoginModal />;
+  return <LoginModal />
 }
 
 // 여긴 해당 Link태그를 통해 로그인에 접속하지 않을 경우 보여짐 => 새로고침이나 직접 URL을 작성하는 경우

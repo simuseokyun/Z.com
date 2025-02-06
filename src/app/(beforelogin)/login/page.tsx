@@ -1,13 +1,15 @@
-"use client";
-import Main from "../_component/Main";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
+
+import Main from '../_component/Main'
 
 export default function Page() {
-  const router = useRouter();
+  const router = useRouter()
   useEffect(() => {
-    router.replace("/i/flow/login");
-  }, []);
+    router.replace('/i/flow/login')
+  }, [])
 
-  return <Main />;
+  return <Main />
 }

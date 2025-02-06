@@ -1,10 +1,11 @@
-"use client";
+'use client'
 
-import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
 type Props = {
-  children: React.ReactNode;
-};
+  children: React.ReactNode
+}
 export default function RQProvider({ children }: Props) {
   const client = new QueryClient({
     defaultOptions: {
@@ -15,13 +16,13 @@ export default function RQProvider({ children }: Props) {
         refetchOnReconnect: false, // 인터넷 연결끊겻다가 다시 접속되는 순간 다시 가져오는 것
       },
     },
-  });
+  })
   return (
     <QueryClientProvider client={client}>
       {children}
       <ReactQueryDevtools
-        initialIsOpen={process.env.NODE_ENV === "development"}
+        initialIsOpen={process.env.NODE_ENV === 'development'}
       />
     </QueryClientProvider>
-  );
+  )
 }

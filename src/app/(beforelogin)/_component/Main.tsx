@@ -1,7 +1,8 @@
-import styles from "./main.module.css";
-import Image from "next/image";
-import logo from "../../../../public/5Udwvqim.jpg";
-import Link from "next/link";
+import Image from 'next/image'
+import Link from 'next/link'
+
+import styles from './main.module.css'
+import logo from '../../../../public/5Udwvqim.jpg'
 
 export default function Main() {
   return (
@@ -21,5 +22,5 @@ export default function Main() {
         </Link>
       </div>
     </>
-  );
+  )
 }

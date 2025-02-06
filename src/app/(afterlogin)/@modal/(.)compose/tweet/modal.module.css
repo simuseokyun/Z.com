@@ -83,7 +83,7 @@
   font-size: 20px;
 }
 .input::placeholder {
-  font-family: "Malgun Gothic", sans-serif;
+  font-family: 'Malgun Gothic', sans-serif;
 }
 
 .modalFooter {

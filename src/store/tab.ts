@@ -1,16 +1,18 @@
-import { create } from "zustand";
-interface TabState {
-  mode: "rec" | "fol";
-  setFol: () => void;
-  setRec: () => void;
-}
+import { create } from 'zustand'
 
-export const useTabState = create<TabState>((set) => ({
-  mode: "rec",
+interface TabState {
+  mode: 'rec' | 'fol'
+  setFol: () => void
+  setRec: () => void
+}
+const useTabState = create<TabState>((set) => ({
+  mode: 'rec',
   setFol: () => {
-    set({ mode: "fol" });
+    set({ mode: 'fol' })
   },
   setRec: () => {
-    set({ mode: "rec" });
+    set({ mode: 'rec' })
   },
-}));
+}))
+
+export default useTabState

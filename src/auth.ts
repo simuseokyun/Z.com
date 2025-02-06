@@ -1,5 +1,5 @@
-import NextAuth, { CredentialsSignin } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+import NextAuth, { CredentialsSignin } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
 
 export const {
   handlers: { GET, POST },
@@ -9,8 +9,8 @@ export const {
   signOut,
 } = NextAuth({
   pages: {
-    signIn: "/i/flow/login",
-    newUser: "/i/flow/signup",
+    signIn: '/i/flow/login',
+    newUser: '/i/flow/signup',
   },
   // callbacks: {
   //     async authorized({ request, auth }) {
@@ -26,28 +26,28 @@ export const {
         const authResponse = await fetch(
           `${process.env.NEXT_PUBLIC_BASE_URL}/api/login`,
           {
-            method: "post",
+            method: 'post',
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
             body: JSON.stringify({
               id: credentials.username, // username과 password는 회원가입 서버액션에서 설정한 키값과 일치해야함 => signup.ts
               password: credentials.password,
             }),
-          }
-        );
+          },
+        )
         // 네트워크 요청을 통해 로그인 오류( 비밀번호 틀림 / 사용자 없음 )를 받았을 때 아래 코드를 통해 에러 메시지를 내보내 줄 수 있음
         if (!authResponse.ok) {
-          const credentialsSignin = new CredentialsSignin();
+          const credentialsSignin = new CredentialsSignin()
           if (authResponse.status === 404) {
-            credentialsSignin.code = "no_user";
+            credentialsSignin.code = 'no_user'
           } else if (authResponse.status === 401) {
-            credentialsSignin.code = "wrong_password";
+            credentialsSignin.code = 'wrong_password'
           }
-          throw credentialsSignin;
+          throw credentialsSignin
         }
 
-        const user = await authResponse.json();
+        const user = await authResponse.json()
 
         return {
           email: user.id,
@@ -55,8 +55,8 @@ export const {
           image: user.image,
           ...user,
           // auth에선 email,name,image 세 가지 값만 내보낼 수 있어서 해당 값으로 처리해줘야 함
-        };
+        }
       },
     }),
   ],
-});
+})

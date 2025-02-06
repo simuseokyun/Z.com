@@ -1,5 +1,5 @@
 export interface Hashtag {
   // tagId: number;
-  title: string;
-  count: number;
+  title: string
+  count: number
 }

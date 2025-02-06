@@ -37,7 +37,7 @@
   outline: none;
 }
 .postForm textarea::placeholder {
-  font-family: "Malgun Gothic", sans-serif;
+  font-family: 'Malgun Gothic', sans-serif;
 }
 .footerButtons {
   display: flex;

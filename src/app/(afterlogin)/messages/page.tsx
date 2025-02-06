@@ -1,5 +1,5 @@
-import style from "./message.module.css";
-import Room from "./_component/Room";
+import style from './message.module.css'
+import Room from './_component/Room'
 
 export default function Home() {
   return (
@@ -14,5 +14,5 @@ export default function Home() {
       <Room />
       <Room />
     </main>
-  );
+  )
 }
