@@ -1,23 +1,21 @@
-import style from './post.module.css'
-
+/* eslint-disable react/require-default-props */
 import Link from 'next/link'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/ko'
-
-import type { Post } from '@/model/Post'
 import { MouseEventHandler } from 'react'
-
+import type { Post as IPost } from '@/model/Post'
 import PostImages from './PostImages'
 import PostArticle from './PostArticle'
 import ActionButtons from './ActionButtons'
+import style from './post.module.css'
 
 dayjs.locale('ko')
 dayjs.extend(relativeTime)
 
 type Props = {
   noImage?: boolean
-  post: Post
+  post: IPost
 }
 export default function Post({ noImage, post }: Props) {
   let target = post

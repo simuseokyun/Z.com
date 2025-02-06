@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import Post from '@/app/(afterLogin)/_component/Post'
 import { Post as IPost } from '@/model/Post'
 
-import { getSinglePost } from '../_lib/getSinglePost'
+import getSinglePost from '../_lib/getSinglePost'
 
 type Props = {
   id: string
@@ -13,7 +13,7 @@ type Props = {
 export default function SinglePost({ id, noImage }: Props) {
   const { data: post, error } = useQuery<
     IPost,
-    Object,
+    unknown,
     IPost,
     [_1: string, _2: string]
   >({

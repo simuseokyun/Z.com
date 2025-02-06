@@ -5,6 +5,7 @@ export const {
   handlers: { GET, POST },
   auth,
   signIn,
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   unstable_update,
   signOut,
 } = NextAuth({

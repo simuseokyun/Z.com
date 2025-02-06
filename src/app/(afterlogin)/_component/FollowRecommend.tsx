@@ -1,10 +1,12 @@
+/* eslint-disable no-unsafe-optional-chaining */
+
 'use client'
 
-import { User } from '@/model/User'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { MouseEventHandler } from 'react'
 import cx from 'classnames'
+import { User } from '@/model/User'
 
 import style from './followRecommend.module.css'
 
@@ -191,7 +193,7 @@ export default function FollowRecommend({ user }: Props) {
   const onFollow: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation() // e.stopPropagation()은 이벤트가 상위 요소로 전파되는 것을 중단합니다. / 이벤트 버블링을 중단하는 데 사용됩니다.
     e.preventDefault() // e.preventDefault()는 이벤트의 기본 동작을 막습니다. / 주로 양식 제출, 링크 클릭, 드래그 앤 드롭 등의 기본 동작을 막는 데 사용됩니다.
-    console.log('클릭')
+
     if (followed) {
       unfollow.mutate(user.id)
     } else {
@@ -213,7 +215,9 @@ export default function FollowRecommend({ user }: Props) {
       <div
         className={cx(style.followButtonSection, followed && style.following)}
       >
-        <button onClick={onFollow}>{followed ? '팔로잉' : '팔로우'}</button>
+        <button type="button" onClick={onFollow}>
+          {followed ? '팔로잉' : '팔로우'}
+        </button>
       </div>
     </div>
   )

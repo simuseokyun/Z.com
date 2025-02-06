@@ -8,17 +8,16 @@ import {
 import { ChangeEventHandler, useRef, useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import useModalState from '@/store/modal'
 import TextAreaAutoSize from 'react-textarea-autosize'
 import Link from 'next/link'
 import Image from 'next/image'
+import useModalState from '@/store/modal'
 import { Post } from '@/model/Post'
 
 import style from './modal.module.css'
 
 export default function TweetModal() {
   const { data: modal, mode, reset } = useModalState()
-  const parent = modal
 
   const queryClient = useQueryClient()
   const [content, setContent] = useState<string>('')
@@ -69,7 +68,6 @@ export default function TweetModal() {
     },
     onError(error) {
       console.error(error)
-      alert('업로드 중 에러가 발생했습니다.')
     },
     onSettled() {
       router.back()
@@ -78,7 +76,6 @@ export default function TweetModal() {
 
   const onClickButton = () => {
     imageRef.current?.click()
-    console.log('클릭햇음')
   }
   const onClickClose = () => {
     router.back()
@@ -181,7 +178,7 @@ export default function TweetModal() {
                   (v, index) =>
                     v && (
                       <div
-                        key={index}
+                        key={v.dataUrl}
                         style={{ flex: 1 }}
                         onClick={() => onRemoveImage(index)}
                       >
@@ -218,6 +215,7 @@ export default function TweetModal() {
                   className={style.uploadButton}
                   type="button"
                   onClick={onClickButton}
+                  aria-label="button"
                 >
                   <svg width={24} viewBox="0 0 24 24" aria-hidden="true">
                     <g>

@@ -17,7 +17,6 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { q } = await searchParams
   const parentMetadata = await parent // parent는 부모 레이아웃을 의미하고 부모 레이아웃의 메타데이터 title/description 을 가져올 수 있다. parent는 항상 두 번째 매개변수임
-  console.log(parentMetadata.title, parentMetadata.description)
 
   return {
     title: `${q} - 검색 / Z`,

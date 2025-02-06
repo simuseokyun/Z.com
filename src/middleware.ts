@@ -5,8 +5,11 @@ export async function middleware(req: NextRequest) {
 
   const token = req.cookies.get('authjs.session-token') // 이걸로도 되나 테스트
   if (!token) {
-    return NextResponse.redirect('http://localhost:3000/i/flow/login')
+    return NextResponse.redirect(
+      `${process.env.NEXT_PUBLIC_BASE_URL}/i/flow/login`,
+    )
   }
+  return NextResponse.next()
 }
 
 export const config = {

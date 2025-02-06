@@ -1,4 +1,4 @@
-export async function getTrends() {
+async function getTrends() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/hashtags/trends`,
     {
@@ -24,3 +24,4 @@ export async function getTrends() {
 
   return res.json()
 }
+export default getTrends

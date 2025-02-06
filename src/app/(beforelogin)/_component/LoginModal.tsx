@@ -1,11 +1,10 @@
 'use client'
 
-import style from '@/app/(beforeLogin)/_component/login.module.css'
 import { ChangeEventHandler, FormEventHandler, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import CloseButton from '@/app/(afterLogin)/_component/CloseButton'
-
+import style from '@/app/(beforeLogin)/_component/login.module.css'
 // 회원가입 모달은 useActionState와 서버액션을 활용하여 컴포넌트를 구성했고 로그인 모달은 useState를 활용해 구성햇음
 export default function LoginModal() {
   const [id, setId] = useState('')
@@ -23,7 +22,7 @@ export default function LoginModal() {
         password,
         redirect: false, // redirect가 false인 경우에는 실패했어도 네트워크엔 성공했다고 뜸 / 그러나 redirect를 true로 만들면 아래 코드가 실행되지 않기때문에 세세한 에러처리를 할 수 없음 / 따라서 auth.ts의 코드를 바꿔줬음 => auth.ts로 이동
       })
-      console.log(result)
+
       if (result?.code === 'no_user') {
         setMessage('가입하지 않은 유저입니다.')
       } else if (result?.code === 'wrong_password') {
@@ -54,7 +53,7 @@ export default function LoginModal() {
         <form onSubmit={onSubmit}>
           <div className={style.modalBody}>
             <div className={style.inputDiv}>
-              <label className={style.inputLabel} htmlFor="id">
+              <label htmlFor="id" className={style.inputLabel}>
                 아이디
               </label>
               <input
@@ -82,7 +81,11 @@ export default function LoginModal() {
           </div>
           <div className={style.message}>{message}</div>
           <div className={style.modalFooter}>
-            <button className={style.actionButton} disabled={!id && !password}>
+            <button
+              type="button"
+              className={style.actionButton}
+              disabled={!id && !password}
+            >
               로그인하기
             </button>
           </div>

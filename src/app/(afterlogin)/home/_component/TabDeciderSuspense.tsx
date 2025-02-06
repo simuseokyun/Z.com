@@ -1,11 +1,11 @@
-import TabDecider from '@/app/(afterLogin)/home/_component/TabDecider'
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query'
+import TabDecider from '@/app/(afterLogin)/home/_component/TabDecider'
 
-import { getPostRecommends } from '../_lib/getPostRecommend'
+import getPostRecommends from '../_lib/getPostRecommend'
 
 export default async function TabDeciderSuspense() {
   const queryClient = new QueryClient()

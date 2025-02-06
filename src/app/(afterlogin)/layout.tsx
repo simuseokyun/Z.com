@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
-import style from '@/app/(afterLogin)/layout.module.css'
 import Link from 'next/link'
 import Image from 'next/image'
+import style from '@/app/(afterLogin)/layout.module.css'
 import { auth } from '@/auth'
 
 import ZLogo from '../../../public/5Udwvqim.jpg'

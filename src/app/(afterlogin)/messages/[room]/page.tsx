@@ -1,13 +1,10 @@
 import { faker } from '@faker-js/faker'
-
-import style from './chatRoom.module.css'
-
 import Link from 'next/link'
-// import BackButton from '@/app/(afterLogin)/_component/BackButton';
 import cx from 'classnames'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/ko'
 import dayjs from 'dayjs'
+import style from './chatRoom.module.css'
 
 dayjs.locale('ko')
 dayjs.extend(relativeTime)

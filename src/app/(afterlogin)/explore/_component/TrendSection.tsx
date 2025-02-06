@@ -1,9 +1,9 @@
 'use client'
 
-import Trend from '@/app/(afterLogin)/_component/Trend'
 import { useQuery } from '@tanstack/react-query'
+import Trend from '@/app/(afterLogin)/_component/Trend'
 import { Hashtag } from '@/model/Hashtag'
-import { getTrends } from '@/app/(afterLogin)/_lib/getTrends'
+import getTrends from '@/app/(afterLogin)/_lib/getTrends'
 
 export default function TrendSection() {
   const { data } = useQuery<Hashtag[]>({

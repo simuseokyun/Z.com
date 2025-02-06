@@ -1,10 +1,11 @@
-export const getUserPosts = async ({
+const getUserPosts = async ({
   queryKey,
   pageParam,
 }: {
   queryKey: string[] // queryKey의 타입을 지정
   pageParam?: number
 }) => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const [_1, _2, username] = queryKey
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${username}/posts?cursor=${pageParam}`,
@@ -23,3 +24,4 @@ export const getUserPosts = async ({
 
   return res.json()
 }
+export default getUserPosts

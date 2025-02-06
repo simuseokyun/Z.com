@@ -1,10 +1,11 @@
 import { cookies } from 'next/headers'
 
-export const getSinglePostServer = async ({
+const getSinglePostServer = async ({
   queryKey,
 }: {
   queryKey: [string, string]
 }) => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const [_1, id] = queryKey
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${id}`,
@@ -23,3 +24,5 @@ export const getSinglePostServer = async ({
 
   return res.json()
 }
+
+export default getSinglePostServer

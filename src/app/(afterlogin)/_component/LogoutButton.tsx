@@ -24,7 +24,7 @@ export default function LogoutButton({ me }: Props) {
   }
 
   return (
-    <button className={style.logOutButton} onClick={onLogout}>
+    <button type="button" className={style.logOutButton} onClick={onLogout}>
       <div className={style.logOutUserImage}>
         <img src={me.user?.image as string} alt={me.user?.email as string} />
       </div>

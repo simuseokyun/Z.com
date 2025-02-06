@@ -38,12 +38,12 @@ export default function CommentForm({ id }: { id: string }) {
           body: formData,
         },
       )
-      console.log(res)
+
       if (res.status === 201) {
         setContent('')
         setPreview([])
         const newPost = await res.json()
-        console.log(newPost)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         queryClient.setQueryData(['posts', id, 'comments'], (prev: any) => {
           const shallow = [...prev]
           shallow.unshift(newPost)
@@ -51,7 +51,6 @@ export default function CommentForm({ id }: { id: string }) {
         })
       }
     } catch (error) {
-      alert('댓글을 작성하는 도중 에러가 발생했습니다.')
       throw new Error('에러')
     }
   }
@@ -106,7 +105,7 @@ export default function CommentForm({ id }: { id: string }) {
             (v, index) =>
               v && (
                 <div
-                  key={index}
+                  key={v.dataUrl}
                   style={{ flex: 1 }}
                   onClick={() => onRemoveImage(index)}
                 >
@@ -147,7 +146,11 @@ export default function CommentForm({ id }: { id: string }) {
                 </svg>
               </button>
             </div>
-            <button className={style.actionButton} disabled={!content}>
+            <button
+              type="button"
+              className={style.actionButton}
+              disabled={!content}
+            >
               답글
             </button>
           </div>

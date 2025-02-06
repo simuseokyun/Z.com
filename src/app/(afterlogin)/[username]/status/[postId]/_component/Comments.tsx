@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Post from '@/app/(afterLogin)/_component/Post'
 import { Post as IPost } from '@/model/Post'
 
-import { getComments } from '../_lib/getComments'
+import getComments from '../_lib/getComments'
 
 type Props = {
   id: string
@@ -14,7 +14,7 @@ export default function Comments({ id }: Props) {
   const post = queryClient.getQueryData(['posts', id])
   const { data, error } = useQuery<
     IPost[],
-    Object,
+    unknown,
     IPost[],
     [_1: string, _2: string, _3: string]
   >({

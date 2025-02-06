@@ -91,19 +91,19 @@
 'use client'
 
 import { InfiniteData, useSuspenseInfiniteQuery } from '@tanstack/react-query'
-import Post from '@/app/(afterLogin)/_component/Post'
-import { Post as IPost } from '@/model/Post'
 import { Fragment, useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
+import Post from '@/app/(afterLogin)/_component/Post'
+import { Post as IPost } from '@/model/Post'
 import styles from '@/app/(afterLogin)/home/home.module.css'
 
-import { getPostRecommends } from '../_lib/getPostRecommend'
+import getPostRecommends from '../_lib/getPostRecommend'
 
 export default function PostRecommends() {
   const { data, hasNextPage, fetchNextPage, isFetching, isPending } =
     useSuspenseInfiniteQuery<
       IPost[],
-      Object,
+      unknown,
       InfiniteData<IPost[]>,
       [_1: string, _2: string],
       number
@@ -124,7 +124,9 @@ export default function PostRecommends() {
 
   useEffect(() => {
     if (inView) {
-      !isFetching && hasNextPage && fetchNextPage()
+      if (!isFetching && hasNextPage) {
+        fetchNextPage()
+      }
     }
   }, [inView, isFetching, hasNextPage, fetchNextPage])
 
@@ -171,14 +173,13 @@ export default function PostRecommends() {
       </div>
     )
   }
-  console.log(data, data?.pages)
 
   return (
     <>
-      {data?.pages.map((page, i) => (
-        <Fragment key={i}>
-          {page.map((post, z) => (
-            <Post key={z} post={post} />
+      {data?.pages.map((page) => (
+        <Fragment key={page[0].postId}>
+          {page.map((post) => (
+            <Post key={post.postId} post={post} />
           ))}
         </Fragment>
       ))}

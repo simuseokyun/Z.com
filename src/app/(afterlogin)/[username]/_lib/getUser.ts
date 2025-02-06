@@ -1,10 +1,11 @@
-import { QueryFunction } from '@tanstack/query-core'
+import { QueryFunction } from '@tanstack/react-query'
 import { User } from '@/model/User'
 
-export const getUser: QueryFunction<User, [_1: string, _2: string]> = async ({
-  queryKey,
-}) => {
-  const [_1, username] = queryKey
+const getUser: QueryFunction<
+  User,
+  [firstKey: string, secondKey: string]
+> = async ({ queryKey }) => {
+  const [firstKey, username] = queryKey
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`,
     {
@@ -25,3 +26,4 @@ export const getUser: QueryFunction<User, [_1: string, _2: string]> = async ({
 
   return res.json()
 }
+export default getUser

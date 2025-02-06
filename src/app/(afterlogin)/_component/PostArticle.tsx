@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+
 'use client'
 
 import { ReactNode } from 'react'

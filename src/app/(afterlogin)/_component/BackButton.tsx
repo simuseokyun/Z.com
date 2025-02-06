@@ -1,7 +1,7 @@
 'use client'
 
-import style from '@/app/(afterLogin)/[username]/profile.module.css'
 import { useRouter } from 'next/navigation'
+import style from '@/app/(afterLogin)/[username]/profile.module.css'
 
 export default function BackButton() {
   const router = useRouter()
@@ -10,7 +10,7 @@ export default function BackButton() {
   }
 
   return (
-    <button className={style.backButton} onClick={onClose}>
+    <button type="button" className={style.backButton} onClick={onClose}>
       <svg
         width={24}
         viewBox="0 0 24 24"

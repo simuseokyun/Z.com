@@ -1,18 +1,18 @@
 'use client'
 
 import { InfiniteData, useSuspenseInfiniteQuery } from '@tanstack/react-query'
-import Post from '@/app/(afterLogin)/_component/Post'
-import { Post as IPost } from '@/model/Post'
 import { Fragment, useEffect } from 'react'
 import { useInView } from 'react-intersection-observer'
+import Post from '@/app/(afterLogin)/_component/Post'
+import { Post as IPost } from '@/model/Post'
 
-import { getFollowingPosts } from '../_lib/getFollowingPosts'
+import getFollowingPosts from '../_lib/getFollowingPosts'
 
 export default function FollowingPosts() {
   const { data, isFetching, hasNextPage, fetchNextPage } =
     useSuspenseInfiniteQuery<
       IPost[],
-      Object,
+      unknown,
       InfiniteData<IPost[]>,
       [_1: string, _2: string],
       number
@@ -31,15 +31,18 @@ export default function FollowingPosts() {
   })
   useEffect(() => {
     if (inView) {
-      !isFetching && hasNextPage && fetchNextPage()
+      if (!isFetching && hasNextPage) {
+        fetchNextPage()
+      }
     }
   }, [inView, inView, isFetching, hasNextPage])
   return (
     <>
       {data?.pages.map((page, i) => (
+        // eslint-disable-next-line react/no-array-index-key
         <Fragment key={i}>
           {page.map((post, z) => (
-            <Post key={z} post={post} />
+            <Post key={post.postId} post={post} />
           ))}
         </Fragment>
       ))}

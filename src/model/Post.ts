@@ -1,5 +1,4 @@
 import { PostImage } from '@/model/PostImage'
-
 import { User } from './User'
 
 interface UserID {

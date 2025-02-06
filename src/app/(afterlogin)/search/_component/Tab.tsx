@@ -1,8 +1,8 @@
 'use client'
 
-import style from '@/app/(afterLogin)/home/_component/tab.module.css'
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import style from '@/app/(afterLogin)/home/_component/tab.module.css'
 
 export default function Tab() {
   const [tab, setTab] = useState<'hot' | 'new'>('hot')

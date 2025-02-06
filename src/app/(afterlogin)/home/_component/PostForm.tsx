@@ -5,7 +5,6 @@ import { Session } from 'next-auth'
 import TextareaAutosize from 'react-textarea-autosize'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Post } from '@/model/Post'
-import Image from 'next/image'
 
 import style from './postForm.module.css'
 
@@ -36,15 +35,12 @@ export default function PostForm({ me }: Props) {
         body: formData,
       })
     },
-    async onSuccess(response, variable, context) {
+    async onSuccess(response) {
       const newPost = await response.json()
-      console.log(newPost)
+
       setContent('')
       setPreview([])
 
-      const recommend = queryClient.getQueryData(['posts', 'recommends'])
-      const follow = queryClient.getQueryData(['posts', 'followings'])
-      console.log(recommend, follow)
       if (queryClient.getQueryData(['posts', 'recommends'])) {
         queryClient.setQueryData(
           ['posts', 'recommends'],
@@ -136,7 +132,7 @@ export default function PostForm({ me }: Props) {
             (v, index) =>
               v && (
                 <div
-                  key={index}
+                  key={v.dataUrl}
                   style={{ flex: 1 }}
                   onClick={onRemoveImage(index)}
                 >
@@ -177,7 +173,11 @@ export default function PostForm({ me }: Props) {
                 </svg>
               </button>
             </div>
-            <button className={style.actionButton} disabled={!content}>
+            <button
+              type="button"
+              className={style.actionButton}
+              disabled={!content}
+            >
               게시하기
             </button>
           </div>

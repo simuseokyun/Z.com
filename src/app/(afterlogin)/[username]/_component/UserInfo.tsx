@@ -1,13 +1,14 @@
 'use client'
 
+/* eslint-disable no-unsafe-optional-chaining */
+
 import { Session } from 'next-auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { User as IUser } from '@/model/User'
 import cx from 'classnames'
 import { MouseEventHandler } from 'react'
-
+import { User as IUser } from '@/model/User'
 import BackButton from '../../_component/BackButton'
-import { getUser } from '../_lib/getUser'
+import getUser from '../_lib/getUser'
 import style from '../profile.module.css'
 
 interface Props {
@@ -15,9 +16,10 @@ interface Props {
   session: Session | null
 }
 export default function UserInfo({ username, session }: Props) {
+  const queryClient = useQueryClient()
   const { data: user, error } = useQuery<
     IUser,
-    Object,
+    unknown,
     IUser,
     [_1: string, _2: string]
   >({
@@ -26,9 +28,6 @@ export default function UserInfo({ username, session }: Props) {
     staleTime: 60 * 1000, // fresh -> stale, 5분이라는 기준
     gcTime: 300 * 1000,
   })
-
-  const queryClient = useQueryClient()
-
   const follow = useMutation({
     mutationFn: async (userId: string) => {
       return fetch(
@@ -49,7 +48,6 @@ export default function UserInfo({ username, session }: Props) {
       if (value) {
         const index = value.findIndex((v) => v.id === userId)
         if (index > -1) {
-          console.log(value, userId, index)
           const shallow = [...value]
           shallow[index] = {
             ...shallow[index],
@@ -84,7 +82,7 @@ export default function UserInfo({ username, session }: Props) {
         'followRecommends',
       ])
       if (value) {
-        const index = value.findIndex((user) => user.id == userId)
+        const index = value.findIndex((user) => user.id === userId)
         const shallow = [...value]
         if (index > -1) {
           shallow[index] = {
@@ -135,7 +133,7 @@ export default function UserInfo({ username, session }: Props) {
         'followRecommends',
       ])
       if (value) {
-        const index = value.findIndex((user) => user.id == userId)
+        const index = value.findIndex((user) => user.id === userId)
         const shallow = [...value]
         if (index > -1) {
           shallow[index] = {
@@ -210,7 +208,6 @@ export default function UserInfo({ username, session }: Props) {
       if (value) {
         const index = value.findIndex((v) => v.id === userId)
         if (index > -1) {
-          console.log(value, userId, index)
           const shallow = [...value]
           shallow[index] = {
             ...shallow[index],
@@ -302,7 +299,7 @@ export default function UserInfo({ username, session }: Props) {
             </div>
             {session?.user?.email !== username && (
               <>
-                <button className={style.messageButton}>
+                <button type="button" className={style.messageButton}>
                   <svg
                     viewBox="0 0 24 24"
                     width="18"
@@ -315,6 +312,7 @@ export default function UserInfo({ username, session }: Props) {
                   </svg>
                 </button>
                 <button
+                  type="button"
                   className={cx(
                     style.followButton,
                     followed && style.following,

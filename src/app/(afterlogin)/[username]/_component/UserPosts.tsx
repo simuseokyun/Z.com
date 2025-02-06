@@ -5,12 +5,12 @@ import {
   useInfiniteQuery,
   InfiniteData,
 } from '@tanstack/react-query'
-import { Post as IPost } from '@/model/Post'
 import { useInView } from 'react-intersection-observer'
 import { Fragment, useEffect } from 'react'
+import { Post as IPost } from '@/model/Post'
 
 import Post from '../../_component/Post'
-import { getUserPosts } from '../_lib/getUserPosts'
+import getUserPosts from '../_lib/getUserPosts'
 
 type Props = {
   username: string
@@ -22,7 +22,7 @@ export default function UserPosts({ username }: Props) {
   })
   const { data, isFetching, hasNextPage, fetchNextPage } = useInfiniteQuery<
     IPost[],
-    Object,
+    unknown,
     InfiniteData<IPost[]>,
     [_1: string, _2: string, _3: string],
     number
@@ -38,17 +38,18 @@ export default function UserPosts({ username }: Props) {
   const queryClient = useQueryClient()
   const user = queryClient.getQueryData(['users', username])
 
-  console.log(data)
   useEffect(() => {
     if (inView) {
-      !isFetching && hasNextPage && fetchNextPage()
+      if (!isFetching && hasNextPage) {
+        fetchNextPage()
+      }
     }
-  }, [inView])
+  }, [inView, isFetching, hasNextPage, fetchNextPage])
   if (user) {
     return (
       <>
-        {data?.pages.map((page, i) => (
-          <Fragment key={i}>
+        {data?.pages.map((page) => (
+          <Fragment key={page[0].postId}>
             {page.map((post) => (
               <Post key={post.postId} post={post} />
             ))}

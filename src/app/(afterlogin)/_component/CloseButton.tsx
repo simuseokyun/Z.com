@@ -9,7 +9,8 @@ export default function CloseButton() {
     router.back()
   }
   return (
-    <button className={style.closeButton} onClick={onClose}>
+    // eslint-disable-next-line jsx-a11y/control-has-associated-label
+    <button type="button" className={style.closeButton} onClick={onClose}>
       <svg
         width={24}
         viewBox="0 0 24 24"

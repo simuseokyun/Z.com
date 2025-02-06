@@ -1,12 +1,12 @@
-import { User } from '@/model/User'
-import { auth } from '@/auth'
 import {
   HydrationBoundary,
   dehydrate,
   QueryClient,
 } from '@tanstack/react-query'
+import { User } from '@/model/User'
+import { auth } from '@/auth'
 
-import { getUserPosts } from './_lib/getUserPosts'
+import getUserPosts from './_lib/getUserPosts'
 import { getUserServer } from './_lib/getUserServer'
 import UserInfo from './_component/UserInfo'
 import style from './profile.module.css'

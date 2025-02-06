@@ -1,19 +1,19 @@
-import BackButton from '@/app/(afterLogin)/_component/BackButton'
 import { Metadata } from 'next'
-import { User } from '@/model/User'
-import { Post as IPost } from '@/model/Post'
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query'
+import BackButton from '@/app/(afterLogin)/_component/BackButton'
+import { User } from '@/model/User'
+import { Post as IPost } from '@/model/Post'
 
 import style from './singlePost.module.css'
 import Comments from './_component/Comments'
 // import CommentForm from '@/app/(afterLogin)/[username]/status/[id]/_component/CommentForm';
-import { getUserServer } from '../../_lib/getUserServer'
-import { getSinglePostServer } from './_lib/getSinglePostServer'
-import { getComments } from './_lib/getComments'
+import getUserServer from '../../_lib/getUserServer'
+import getSinglePostServer from './_lib/getSinglePostServer'
+import getComments from './_lib/getComments'
 import CommentForm from './_component/CommentForm'
 import SinglePost from './_component/SinglePost'
 

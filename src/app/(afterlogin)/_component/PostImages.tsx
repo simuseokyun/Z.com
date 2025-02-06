@@ -1,6 +1,6 @@
 import Link from 'next/link'
-import style from '@/app/(afterLogin)/_component/post.module.css'
 import cx from 'classnames'
+import style from '@/app/(afterLogin)/_component/post.module.css'
 
 type Props = {
   post: {
@@ -12,6 +12,7 @@ type Props = {
       image: string
     }
     createdAt: Date
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Images: any[]
   }
 }
