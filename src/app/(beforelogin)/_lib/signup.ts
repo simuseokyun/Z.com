@@ -35,8 +35,7 @@ export default async (
         credentials: 'include',
       },
     )
-    console.log(response.status)
-    console.log(response.json())
+
     if (response.status === 403) {
       return { message: 'user_exists' }
     }
