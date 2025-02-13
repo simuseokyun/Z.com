@@ -38,8 +38,8 @@
     "react/require-default-props": "off",
     "jsx-a11y/no-noninteractive-element-interactions": "off",
     "jsx-a11y/control-has-associated-label": "off",
-    // "no-shadow": "off",
-    "@typescript-eslint/no-shadow": "off"
+    "@typescript-eslint/no-shadow": "off",
+    "react/destructuring-assignment": "off"
   },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {

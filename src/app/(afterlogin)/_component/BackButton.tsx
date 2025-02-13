@@ -5,12 +5,12 @@ import style from '@/app/(afterLogin)/[username]/profile.module.css'
 
 export default function BackButton() {
   const router = useRouter()
-  const onClose = () => {
+  const onBack = () => {
     router.back()
   }
 
   return (
-    <button type="button" className={style.backButton} onClick={onClose}>
+    <button type="button" className={style.backButton} onClick={onBack}>
       <svg
         width={24}
         viewBox="0 0 24 24"

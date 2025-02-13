@@ -6,6 +6,7 @@ import { Session } from 'next-auth'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import cx from 'classnames'
 import { MouseEventHandler } from 'react'
+import { useRouter } from 'next/navigation'
 import { User as IUser } from '@/model/User'
 import BackButton from '../../_component/BackButton'
 import getUser from '../_lib/getUser'
@@ -16,6 +17,7 @@ interface Props {
   session: Session | null
 }
 export default function UserInfo({ username, session }: Props) {
+  const router = useRouter()
   const queryClient = useQueryClient()
   const { data: user, error } = useQuery<
     IUser,
@@ -249,6 +251,11 @@ export default function UserInfo({ username, session }: Props) {
       follow.mutate(username)
     }
   }
+  const onMessage = () => {
+    const ids = [session?.user?.email, user?.id]
+    ids.sort()
+    router.push(`/messages/${ids.join('-')}`)
+  }
   if (error) {
     return (
       <>
@@ -299,7 +306,11 @@ export default function UserInfo({ username, session }: Props) {
             </div>
             {session?.user?.email !== username && (
               <>
-                <button type="button" className={style.messageButton}>
+                <button
+                  type="button"
+                  className={style.messageButton}
+                  onClick={onMessage}
+                >
                   <svg
                     viewBox="0 0 24 24"
                     width="18"

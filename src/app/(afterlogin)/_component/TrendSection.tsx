@@ -5,7 +5,7 @@ import { Session } from 'next-auth'
 import { useQuery } from '@tanstack/react-query'
 import { Hashtag } from '@/model/Hashtag'
 
-import { getTrends } from '../_lib/getTrends'
+import getTrends from '../_lib/getTrends'
 import Trend from './Trend'
 import style from './trendSection.module.css'
 

@@ -12,8 +12,8 @@ export default function SearchForm({ q, pf, f }: Props) {
       </svg>
       <input type="search" name="q" defaultValue={q} />
       {/* form을 제출하게 되면 모든 input의 내용을 폼으로 전송하게 됨 / 따라서 시각적으론 필요없는 input이지만 pf와 f를 전달하기위해 type을 hidden으로 만들어서 같이 전송 */}
-      <input type="hidden" name="pf" defaultValue={pf} />
-      <input type="hidden" name="f" defaultValue={f} />
+      <input type="hidden" name="pf" defaultValue="null" />
+      <input type="hidden" name="f" defaultValue="null" />
     </form>
   )
 }
