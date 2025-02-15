@@ -3,13 +3,13 @@
 import TextareaAutosize from 'react-textarea-autosize'
 import {
   ChangeEventHandler,
-  FormEventHandler,
   useState,
   useEffect,
+  KeyboardEventHandler,
 } from 'react'
 import { useSession } from 'next-auth/react'
+import { useQueryClient } from '@tanstack/react-query'
 import useSocket from '../_lib/useSocket'
-
 import style from './messageForm.module.css'
 
 interface Props {
@@ -19,19 +19,33 @@ interface Props {
 export default function MessageForm({ id }: Props) {
   const { data: session } = useSession()
   const [content, setContent] = useState('')
+  const queryClient = useQueryClient()
   const [socket] = useSocket() // use가 붙은 커스텀훅은 사용하는 컴포넌트마다 상태가 공유되는게 아니라 계속 새로 생성되는 것임 (주의요망)
   const onChange: ChangeEventHandler<HTMLTextAreaElement> = (e) => {
     e.preventDefault()
     setContent(e.target.value)
   }
-  const onSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    e.preventDefault()
+  const onSubmit = () => {
     socket?.emit('sendMessage', {
       senderId: session?.user?.email,
       receiverId: id,
       content,
     })
+
     setContent('')
+  }
+  const onEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+    if (e.key === 'Enter') {
+      if (e.shiftKey) {
+        return
+      }
+      e.preventDefault()
+      if (!content?.trim()) {
+        return
+      }
+      onSubmit()
+      setContent('')
+    }
   }
   useEffect(() => {
     socket?.on('receiveMessage', () => {
@@ -44,11 +58,18 @@ export default function MessageForm({ id }: Props) {
 
   return (
     <div className={style.formZone}>
-      <form className={style.form} onSubmit={onSubmit}>
+      <form
+        className={style.form}
+        onSubmit={(e) => {
+          e.preventDefault()
+          onSubmit()
+        }}
+      >
         <TextareaAutosize
           value={content}
           placeholder="새 쪽지 작성하기"
           onChange={onChange}
+          onKeyDown={onEnter}
         />
         <button
           className={style.submitButton}
