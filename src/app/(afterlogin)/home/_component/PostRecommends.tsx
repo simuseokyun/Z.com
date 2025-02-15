@@ -176,8 +176,9 @@ export default function PostRecommends() {
 
   return (
     <>
-      {data?.pages.map((page) => (
-        <Fragment key={page[0].postId}>
+      {data?.pages.map((page, i) => (
+        // eslint-disable-next-line react/no-array-index-key
+        <Fragment key={i}>
           {page.map((post) => (
             <Post key={post.postId} post={post} />
           ))}

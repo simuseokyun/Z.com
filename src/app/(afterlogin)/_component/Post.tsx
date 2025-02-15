@@ -24,7 +24,7 @@ export default function Post({ noImage, post }: Props) {
   }
 
   const stopPropagation: MouseEventHandler = (e) => {
-    e.stopPropagation()
+    e.stopPropagation() // 이벤트 버블링 방지
   }
 
   return (
@@ -44,6 +44,7 @@ export default function Post({ noImage, post }: Props) {
           {post.User.nickname}님이 재게시했습니다
         </div>
       )}
+
       <div className={style.postWrapper}>
         <div className={style.postUserSection}>
           <Link

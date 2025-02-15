@@ -174,7 +174,7 @@ export default function PostForm({ me }: Props) {
               </button>
             </div>
             <button
-              type="button"
+              type="submit"
               className={style.actionButton}
               disabled={!content}
             >
