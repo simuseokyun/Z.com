@@ -82,7 +82,7 @@ export default function LoginModal() {
           <div className={style.message}>{message}</div>
           <div className={style.modalFooter}>
             <button
-              type="button"
+              type="submit"
               className={style.actionButton}
               disabled={!id && !password}
             >
