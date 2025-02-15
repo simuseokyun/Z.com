@@ -10,7 +10,7 @@ import {
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Post } from '@/model/Post'
-import useModalState from '@/store/modal'
+import useModalStore from '@/store/modal'
 import style from './post.module.css'
 
 type Props = {
@@ -21,16 +21,18 @@ export default function ActionButtons({ white, post }: Props) {
   const queryClient = useQueryClient()
   const router = useRouter()
   const { data: session } = useSession()
+  const modalStore = useModalStore()
   let target = post
   if (post.Original) {
     target = post.Original
   }
-  const modalStore = useModalState()
+
   const reposted = !!target.Reposts?.find(
     (v) => v.userId === session?.user?.email,
   )
   const liked = !!target.Hearts?.find((v) => v.userId === session?.user?.email)
   const { postId } = post
+
   const repost = useMutation({
     mutationFn: async () => {
       return fetch(
@@ -97,13 +99,11 @@ export default function ActionButtons({ white, post }: Props) {
   })
   const deleteRepost = useMutation({
     mutationFn: async () => {
-      return fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/reposts`,
-        {
-          method: 'delete',
-          credentials: 'include',
-        },
-      )
+      return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}`, {
+        method: 'delete',
+        credentials: 'include',
+        cache: 'no-cache',
+      })
     },
 
     onSuccess() {
