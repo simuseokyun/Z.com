@@ -1,5 +1,0 @@
-"react-hooks/exhaustive-deps": 'warn' => 의존성 배열 추가하라는 경고 "@typescript-eslint/no-unused-vars": "off" => 사용하지 않는 변수 경고   
-"react/require-default-props": "off" => Props가 옵셔널일때의 경고 
-"jsx-a11y/no-noninteractive-element-interactions": "off" div에 onClick설정했을때
-"jsx-a11y/control-has-associated-label" : button Text 
-"@typescript-eslint/no-shadow": "off" => 외부에서 선언된 변수 선언불가
