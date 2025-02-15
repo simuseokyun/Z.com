@@ -47,9 +47,12 @@
 .roomChatInfo {
   display: flex;
   flex-direction: column;
-  color: #536471;
+
   font-size: 15px;
 }
 .roomChatInfo b {
-  color: black;
+  color: black inherit;
+}
+.roomChatInfo span {
+  color: #666666;
 }
