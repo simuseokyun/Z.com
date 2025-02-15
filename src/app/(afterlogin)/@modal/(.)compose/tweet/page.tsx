@@ -5,7 +5,13 @@ import {
   useQueryClient,
   InfiniteData,
 } from '@tanstack/react-query'
-import { ChangeEventHandler, useRef, useState, FormEvent } from 'react'
+import {
+  ChangeEventHandler,
+  useRef,
+  useState,
+  FormEvent,
+  FormEventHandler,
+} from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import TextAreaAutoSize from 'react-textarea-autosize'
@@ -13,12 +19,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import useModalState from '@/store/modal'
 import { Post } from '@/model/Post'
-
 import style from './modal.module.css'
 
 export default function TweetModal() {
+  const modalStore = useModalState()
   const { data: modal, mode, reset } = useModalState()
-
+  const parent = modalStore.data
   const queryClient = useQueryClient()
   const [content, setContent] = useState<string>('')
   const [preview, setPreview] = useState<
@@ -45,7 +51,54 @@ export default function TweetModal() {
     },
     async onSuccess(res) {
       const newPost = await res.json()
+      const queryCache = queryClient.getQueryCache()
+      const queryKeys = queryCache.getAll().map((v) => v.queryKey)
+      // getAll()메서드를 통해 queryCache를 배열로 만들어줌
+      queryKeys.forEach((queryKey) => {
+        if (queryKey[0] === 'posts') {
+          const value: Post | InfiniteData<Post[]> | undefined =
+            queryClient.getQueryData(queryKey)
 
+          if (value && 'pages' in value) {
+            const shallow = {
+              ...value,
+              pages: [...value.pages],
+            }
+            shallow.pages[0] = [...shallow.pages[0]]
+            shallow.pages[0].unshift(newPost) // 새 게시글 추가
+            queryClient.setQueryData(queryKey, shallow)
+          }
+        }
+      })
+    },
+    onError(error) {
+      console.error(error)
+    },
+    onSettled() {
+      router.back()
+    },
+  })
+  const comment = useMutation({
+    mutationFn: async (e: FormEvent) => {
+      e.preventDefault()
+      const formData = new FormData()
+      formData.append('content', content)
+      preview.forEach((p) => {
+        if (p) {
+          formData.append('images', p.file)
+        }
+      })
+      return fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${parent?.postId}/comments`,
+        {
+          method: 'post',
+          credentials: 'include',
+          body: formData,
+        },
+      )
+    },
+    async onSuccess(res) {
+      const newPost = await res.json()
       const queryCache = queryClient.getQueryCache()
       const queryKeys = queryCache.getAll().map((v) => v.queryKey)
       // getAll()메서드를 통해 queryCache를 배열로 만들어줌
@@ -80,6 +133,13 @@ export default function TweetModal() {
   const onClickClose = () => {
     router.back()
     reset()
+  }
+  const onSubmit: FormEventHandler<HTMLFormElement> = (e) => {
+    if (modalStore.mode === '새로운글') {
+      mutation.mutate(e)
+    } else {
+      comment.mutate(e)
+    }
   }
   const onUpload: ChangeEventHandler<HTMLInputElement> = (e) => {
     e.preventDefault()
@@ -132,7 +192,7 @@ export default function TweetModal() {
             </g>
           </svg>
         </button>
-        <form className={style.modalForm} onSubmit={mutation.mutate}>
+        <form className={style.modalForm} onSubmit={onSubmit}>
           {mode === '댓글' && modal && (
             <div className={style.modalOriginal}>
               <div className={style.postUserSection}>
@@ -225,7 +285,7 @@ export default function TweetModal() {
                 </button>
               </div>
               <button
-                type="button"
+                type="submit"
                 className={style.actionButton}
                 disabled={!content}
               >
