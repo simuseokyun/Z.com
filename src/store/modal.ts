@@ -9,11 +9,11 @@ interface Props {
   reset: () => void
   // reset은 보통 객체리터럴로 초기화시키기 때문에 파라미터 필요 X
 }
-const useModalState = create<Props>((set) => ({
+const useModalStore = create<Props>((set) => ({
   mode: '새로운글',
   data: null,
   setMode: (mode) => set({ mode }),
   setData: (data) => set({ data }),
   reset: () => set({ mode: '새로운글', data: null }),
 }))
-export default useModalState
+export default useModalStore
