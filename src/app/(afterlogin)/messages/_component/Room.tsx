@@ -1,33 +1,38 @@
 'use client'
 
-import { faker } from '@faker-js/faker'
 import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import style from '@/app/(afterLogin)/messages/message.module.css'
 import 'dayjs/locale/ko'
 import IRoom from '@/model/Room'
+import { useSession } from 'next-auth/react'
 
 dayjs.locale('ko')
 dayjs.extend(relativeTime)
 
 export default function Room({ room }: { room: IRoom }) {
   const router = useRouter()
+  const { data: session } = useSession()
+  console.log('room', room.room)
 
   const onClick = () => {
-    router.push(`/messages/${room.room}}`)
+    router.push(`/messages/${room.room}`)
   }
+
+  const user =
+    room.Receiver.id === session?.user?.email ? room.Sender : room.Receiver
 
   return (
     <div className={style.room} onClickCapture={onClick}>
       <div className={style.roomUserImage}>
-        <img src={faker.image.avatar()} alt="" />
+        <img src={user.image as string} alt="profile" />
       </div>
       <div className={style.roomChatInfo}>
         <div className={style.roomUserInfo}>
-          <b>{room.Receiver.name}</b>
+          <b>{user.id}</b>
           &nbsp;
-          <span>@{room.Receiver.id}</span>
+          <span>@{user.nickname}</span>
           &nbsp; · &nbsp;
           <span className={style.postDate}>
             {dayjs(room.createdAt).fromNow(true)}
