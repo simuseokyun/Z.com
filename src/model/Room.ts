@@ -1,8 +1,9 @@
-import { User } from 'next-auth'
+import { User } from './User'
 
-interface IRoom {
+export interface IRoom {
   room: string
   Receiver: User
+  Sender: User
   content: string
   createdAt: Date
 }
