@@ -7,13 +7,13 @@ import {
 import style from './explore.module.css'
 import SearchForm from '../_component/SearchForm'
 import TrendSection from './_component/TrendSection'
-import { getTrends } from '../_lib/getTrends'
+import getTrends from '../_lib/getTrends'
 
 export default async function Home() {
   const queryClient = new QueryClient()
 
   await queryClient.prefetchQuery({
-    queryKey: ['hashtags', 'trends'],
+    queryKey: ['trends'],
     queryFn: getTrends,
   })
   const dehydratedState = dehydrate(queryClient)
