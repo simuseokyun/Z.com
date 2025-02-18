@@ -1,6 +1,7 @@
 'use server'
 
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 import { signIn } from '@/auth'
 
 export default async (
@@ -64,7 +65,8 @@ export default async (
   }
 
   if (shouldRedirect) {
-    redirect('/home') // try/catch문 안에서 X
+    redirect('/home')
+    // try/catch문 안에서 X
   }
   return { message: null }
 }

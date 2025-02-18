@@ -11,6 +11,7 @@ const getSinglePost = async ({ queryKey }: { queryKey: [string, string] }) => {
       // next15부턴 cache:"no-store" 가 기본이 되서 입력안해줘도 됨
     },
   )
+  throw new Error()
   if (!res.ok) {
     // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data')

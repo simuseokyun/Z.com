@@ -1,14 +1,12 @@
-import { QueryFunction } from '@tanstack/react-query'
-import { Post } from '@/model/Post'
+interface Props {
+  pageParam?: number
+  queryKey: string[]
+}
 
-const getComments: QueryFunction<
-  Post[],
-  [_1: string, _2: string, _3: string]
-> = async ({ queryKey }) => {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const [_1, _2, id] = queryKey
+const getComments = async ({ pageParam, queryKey }: Props) => {
+  const [, id] = queryKey
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${id}/comments`,
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${id}/comments?cursor=${pageParam}`,
     {
       next: {
         tags: ['posts', id, 'comments'],
