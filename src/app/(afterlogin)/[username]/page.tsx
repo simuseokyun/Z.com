@@ -52,7 +52,7 @@ export default async function Profile({
     <HydrationBoundary state={dehydratedState}>
       <main className={style.main}>
         <UserInfo username={decodeUsername} session={session} />
-        <UserPosts username={decodeUsername} />
+        <UserPosts username={decodeUsername} me={session} />
       </main>
     </HydrationBoundary>
   )
