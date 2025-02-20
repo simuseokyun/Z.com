@@ -25,7 +25,10 @@ export async function generateMetadata(
 }
 export default async function Search({ searchParams }: Props) {
   const query = await searchParams
-  // page.tsx 에서만 next에서 지원하는 searchParams를 받을 수 있음 / 다른 컴포넌트에서 필요하다면 Props로 넘겨줘야 함
+  // page.tsx 에서만 next에서 지원하는 searchParams를 받을 수 있음 / 다른 컴포넌트에서 필요하다면 Props로 넘겨줘야 함. params는 layout.tsx,page.tsx에서만 가능
+
+  //   layout.tsx는 경로가 바뀔 때만 영향을 받는 컴포넌트이기 때문에,
+  //   searchParams처럼 URL만 바뀌어도 변경되는 값을 직접 받을 수 없다
   return (
     <main className={style.main}>
       <div className={style.searchTop}>

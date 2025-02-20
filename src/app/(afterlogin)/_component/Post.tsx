@@ -75,7 +75,7 @@ export default function Post({ noImage, post }: Props) {
                 style={{ color: 'rgb(29, 155, 240)' }}
                 onClick={stopPropagation}
               >
-                @{target.Parent.User.id}
+                @{target.Parent.User.nickname}
               </Link>
               님에게 보내는 답글
             </div>

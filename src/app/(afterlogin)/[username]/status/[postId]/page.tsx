@@ -17,10 +17,15 @@ import getComments from './_lib/getComments'
 import CommentForm from './_component/CommentForm'
 import SinglePost from './_component/SinglePost'
 
-type Props = {
+interface MetaProps {
   params: Promise<{ postId: string; username: string }>
 }
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+interface Props {
+  params: { username: string; postId: string }
+}
+export async function generateMetadata({
+  params,
+}: MetaProps): Promise<Metadata> {
   const { username, postId } = await params
   const [user, post]: [User, IPost] = await Promise.all([
     getUserServer({ queryKey: ['users', username] }),
@@ -31,20 +36,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: post.content,
   }
 }
-interface Props2 {
-  params: { username: string; postId: string }
-}
 
-export default async function Page({ params }: Props2) {
-  const { username, postId } = await params
+export default async function Page({ params }: Props) {
+  const { postId } = await params
   const queryClient = new QueryClient()
   await queryClient.prefetchQuery({
     queryKey: ['posts', postId],
     queryFn: getSinglePostServer,
   })
-  await queryClient.prefetchQuery({
+  await queryClient.prefetchInfiniteQuery({
     queryKey: ['posts', postId, 'comments'],
     queryFn: getComments,
+    initialPageParam: 0,
   })
   const dehydrateState = dehydrate(queryClient)
 

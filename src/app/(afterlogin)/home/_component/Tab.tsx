@@ -1,33 +1,32 @@
 'use client'
 
-import useTabState from '@/store/tab'
+import { MouseEventHandler } from 'react'
+import useTabState from '@/store/homeTab'
 
 import style from './tab.module.css'
 
 export default function Tab() {
-  const tab = useTabState((state) => state.mode) // 상태 읽기
-  const setRec = useTabState((state) => state.setRec) // 상태 변경 함수 읽기
-  const setFol = useTabState((state) => state.setFol) // 상태 변경 함수 읽기
+  const { mode, setRec, setFol } = useTabState()
 
-  const onClickRec = () => {
-    setRec() // 상태 변경 함수 호출
-  }
-
-  const onClickFol = () => {
-    setFol() // 상태 변경 함수 호출
+  const onClick: MouseEventHandler<HTMLDivElement> = (e) => {
+    if ((e.target as HTMLDivElement).textContent === '추천') {
+      setRec()
+    } else if ((e.target as HTMLDivElement).textContent === '팔로우 중') {
+      setFol()
+    }
   }
 
   return (
     <div className={style.homeFixed}>
       <div className={style.homeText}>홈</div>
       <div className={style.homeTab}>
-        <div onClick={onClickRec}>
+        <div onClick={onClick}>
           추천
-          <div className={style.tabIndicator} hidden={tab === 'fol'} />
+          <div className={style.tabIndicator} hidden={mode === 'follow'} />
         </div>
-        <div onClick={onClickFol}>
+        <div onClick={onClick}>
           팔로우 중
-          <div className={style.tabIndicator} hidden={tab === 'rec'} />
+          <div className={style.tabIndicator} hidden={mode === 'recommend'} />
         </div>
       </div>
     </div>

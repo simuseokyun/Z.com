@@ -16,17 +16,18 @@ export default function PostForm({ me }: Props) {
   const [preview, setPreview] = useState<
     Array<{ dataUrl: string; file: File } | null>
   >([])
+
   const [content, setContent] = useState('')
   const queryClient = useQueryClient()
 
-  const mutation = useMutation({
+  const submit = useMutation({
     mutationFn: (e: FormEvent) => {
-      e.preventDefault()
+      e.preventDefault() // 폼 전송 막기
       const formData = new FormData()
       formData.append('content', content)
-      preview.forEach((p) => {
-        if (p) {
-          formData.append('images', p.file)
+      preview.forEach((image) => {
+        if (image) {
+          formData.append('images', image.file)
         }
       })
       return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`, {
@@ -37,14 +38,15 @@ export default function PostForm({ me }: Props) {
     },
     async onSuccess(response) {
       const newPost = await response.json()
-
       setContent('')
       setPreview([])
+      const recommendPosts = queryClient.getQueryData(['posts', 'recommends'])
 
-      if (queryClient.getQueryData(['posts', 'recommends'])) {
+      if (recommendPosts) {
         queryClient.setQueryData(
           ['posts', 'recommends'],
-          (prevData: { pages: Post[][] }) => {
+          // React Query는 기본적으로 pageParam을 직접 다루지 않고, pages 배열의 요소만 수정하게 됩니다 => prevData에 pageParam의 타입을 정의하지 않아도 되는 이유
+          (prevData: { pages: Array<Post[]> }) => {
             const shallow = {
               ...prevData,
               pages: [...prevData.pages],
@@ -55,10 +57,11 @@ export default function PostForm({ me }: Props) {
           },
         )
       }
-      if (queryClient.getQueryData(['posts', 'followings'])) {
+      const followingPosts = queryClient.getQueryData(['posts', 'followings'])
+      if (followingPosts) {
         queryClient.setQueryData(
           ['posts', 'followings'],
-          (prevData: { pages: Post[][] }) => {
+          (prevData: { pages: Array<Post[]> }) => {
             const shallow = {
               ...prevData,
               pages: [...prevData.pages],
@@ -86,14 +89,16 @@ export default function PostForm({ me }: Props) {
   const onRemoveImage = (index: number) => () => {
     setPreview((prevPreview) => {
       const prev = [...prevPreview]
-      prev[index] = null
-      return prev
+      const newPreview = prev.filter((image, i) => i !== index)
+      return newPreview
     })
   }
 
   const onUpload: ChangeEventHandler<HTMLInputElement> = (e) => {
     e.preventDefault()
+
     if (e.target.files) {
+      // e.target.files는 fileList 인데 유사배열형태라 배열로 변환해줘야 함
       Array.from(e.target.files).forEach((file, index) => {
         const reader = new FileReader()
         reader.onloadend = () => {
@@ -106,13 +111,14 @@ export default function PostForm({ me }: Props) {
             return prev
           })
         }
+
         reader.readAsDataURL(file)
       })
     }
   }
 
   return (
-    <form className={style.postForm} onSubmit={mutation.mutate}>
+    <form className={style.postForm} onSubmit={submit.mutate}>
       <div className={style.postUserSection}>
         <div className={style.postUserImage}>
           <img
@@ -137,13 +143,9 @@ export default function PostForm({ me }: Props) {
                   onClick={onRemoveImage(index)}
                 >
                   <img
+                    className={style.previewImg}
                     src={v.dataUrl}
                     alt="미리보기"
-                    style={{
-                      objectFit: 'contain',
-                      width: '100%',
-                      maxHeight: 100,
-                    }}
                   />
                 </div>
               ),
@@ -156,8 +158,11 @@ export default function PostForm({ me }: Props) {
                 type="file"
                 name="imageFiles"
                 multiple
+                // multiple은 여러파일 선택가능
                 hidden
-                ref={imageRef}
+                ref={(node) => {
+                  imageRef.current = node
+                }}
                 onChange={onUpload}
               />
               <button

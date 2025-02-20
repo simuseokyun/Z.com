@@ -31,7 +31,6 @@ export default function PostImages({ post }: Props) {
         className={cx(style.postImageSection, style.oneImage)}
         style={{
           backgroundImage: `url(${post.Images[0]?.link})`,
-          backgroundSize: 'contain',
         }}
       >
         <img src={post.Images[0]?.link} alt="" />
@@ -46,6 +45,7 @@ export default function PostImages({ post }: Props) {
           style={{
             backgroundImage: `url(${post.Images[0]?.link})`,
             backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         />
         <Link
@@ -53,6 +53,7 @@ export default function PostImages({ post }: Props) {
           style={{
             backgroundImage: `url(${post.Images[1]?.link})`,
             backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         />
       </div>
@@ -66,6 +67,7 @@ export default function PostImages({ post }: Props) {
           style={{
             backgroundImage: `url(${post.Images[0]?.link})`,
             backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         />
         <div>
@@ -74,6 +76,7 @@ export default function PostImages({ post }: Props) {
             style={{
               backgroundImage: `url(${post.Images[1]?.link})`,
               backgroundSize: 'cover',
+              backgroundPosition: 'center',
             }}
           />
           <Link
@@ -81,6 +84,7 @@ export default function PostImages({ post }: Props) {
             style={{
               backgroundImage: `url(${post.Images[2]?.link})`,
               backgroundSize: 'cover',
+              backgroundPosition: 'center',
             }}
           />
         </div>
@@ -95,6 +99,7 @@ export default function PostImages({ post }: Props) {
           style={{
             backgroundImage: `url(${post.Images[0]?.link})`,
             backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         />
         <Link
@@ -102,6 +107,7 @@ export default function PostImages({ post }: Props) {
           style={{
             backgroundImage: `url(${post.Images[1]?.link})`,
             backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         />
         <Link
@@ -109,6 +115,7 @@ export default function PostImages({ post }: Props) {
           style={{
             backgroundImage: `url(${post.Images[2]?.link})`,
             backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         />
         <Link
@@ -116,6 +123,7 @@ export default function PostImages({ post }: Props) {
           style={{
             backgroundImage: `url(${post.Images[3]?.link})`,
             backgroundSize: 'cover',
+            backgroundPosition: 'center',
           }}
         />
       </div>

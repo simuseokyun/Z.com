@@ -1,12 +1,12 @@
 'use client'
 
+import { useSession } from 'next-auth/react'
 import dayjs from 'dayjs'
 import { useRouter } from 'next/navigation'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import style from '@/app/(afterLogin)/messages/message.module.css'
 import 'dayjs/locale/ko'
 import IRoom from '@/model/Room'
-import { useSession } from 'next-auth/react'
 
 dayjs.locale('ko')
 dayjs.extend(relativeTime)
@@ -14,7 +14,6 @@ dayjs.extend(relativeTime)
 export default function Room({ room }: { room: IRoom }) {
   const router = useRouter()
   const { data: session } = useSession()
-  console.log('room', room.room)
 
   const onClick = () => {
     router.push(`/messages/${room.room}`)

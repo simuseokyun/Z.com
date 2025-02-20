@@ -10,9 +10,12 @@ import { User } from '@/model/User'
 
 import style from './followRecommend.module.css'
 
-type Props = { user: User }
+interface Props {
+  user: User
+}
 export default function FollowRecommend({ user }: Props) {
   const { data: session } = useSession()
+
   const queryClient = useQueryClient()
   // useQueryClient는 React Query에서 제공하는 훅으로, 쿼리 클라이언트에 접근할 수 있게 해줍니다.
   // useQueryClient 훅을 사용하면 쿼리 클라이언트의 기능을 직접 사용하여, 쿼리 캐시를 업데이트하거나, 새로운 쿼리를 프리패치(pre-fetch)하거나, 캐시에서 데이터를 삭제하는 등의 작업을 할 수 있습니다.
@@ -23,20 +26,19 @@ export default function FollowRecommend({ user }: Props) {
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/follow`,
         {
           method: 'post',
-
           credentials: 'include',
         },
       )
     },
     onMutate(userId: string) {
       // onMutate는 하트누르기와 같은 옵티미스틱 적용을 할때 사용하고 onSuccess는 성공했을때만 동작하게
-      const value: User[] | undefined = queryClient.getQueryData([
+      const followData: User[] | undefined = queryClient.getQueryData([
         'users',
         'followRecommends',
       ])
-      if (value) {
-        const index = value.findIndex((a) => a.id === userId)
-        const shallow = [...value]
+      if (followData) {
+        const index = followData.findIndex((a) => a.id === userId)
+        const shallow = [...followData]
         shallow[index] = {
           ...shallow[index],
           Followers: [{ id: session?.user?.email as string }],
@@ -47,18 +49,18 @@ export default function FollowRecommend({ user }: Props) {
         }
         queryClient.setQueryData(['users', 'followRecommends'], shallow)
       }
-      const value2: User | undefined = queryClient.getQueryData([
+      const userInfo: User | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      // console.log(value2);
-      if (value2) {
+
+      if (userInfo) {
         const shallow = {
-          ...value2,
+          ...userInfo,
           Followers: [{ id: session?.user?.email }],
           _count: {
-            ...value2._count,
-            Followers: value2._count?.Followers + 1,
+            ...userInfo._count,
+            Followers: userInfo._count?.Followers + 1,
           },
         }
         queryClient.setQueryData(['users', session?.user?.email], shallow)
@@ -66,13 +68,13 @@ export default function FollowRecommend({ user }: Props) {
     },
     onError(error, userId: string) {
       // onError영역의 첫 번째 파라미터는 무조건 error
-      const value: User[] | undefined = queryClient.getQueryData([
+      const followData: User[] | undefined = queryClient.getQueryData([
         'users',
         'followRecommends',
       ])
-      if (value) {
-        const index = value.findIndex((a) => a.id === userId)
-        const shallow = [...value]
+      if (followData) {
+        const index = followData.findIndex((a) => a.id === userId)
+        const shallow = [...followData]
         shallow[index] = {
           ...shallow[index],
           Followers: shallow[index].Followers.filter(
@@ -86,19 +88,19 @@ export default function FollowRecommend({ user }: Props) {
         queryClient.setQueryData(['users', 'followRecommends'], shallow)
       }
 
-      const value2: User | undefined = queryClient.getQueryData([
+      const userInfo: User | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      if (value2) {
+      if (userInfo) {
         const shallow = {
-          ...value2,
-          Followers: value2.Followers.filter(
+          ...userInfo,
+          Followers: userInfo.Followers.filter(
             (v) => v.id !== session?.user?.email,
           ),
           _count: {
-            ...value2._count,
-            Followers: value2._count?.Followers - 1,
+            ...userInfo._count,
+            Followers: userInfo._count?.Followers - 1,
           },
         }
         queryClient.setQueryData(['users', userId], shallow)
@@ -107,7 +109,6 @@ export default function FollowRecommend({ user }: Props) {
   })
   const unfollow = useMutation({
     mutationFn: (userId: string) => {
-      // console.log('unfollow', userId);
       return fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/follow`,
         {
@@ -117,13 +118,13 @@ export default function FollowRecommend({ user }: Props) {
       )
     },
     onMutate(userId: string) {
-      const value: User[] | undefined = queryClient.getQueryData([
+      const followData: User[] | undefined = queryClient.getQueryData([
         'users',
         'followRecommends',
       ])
-      if (value) {
-        const index = value.findIndex((a) => a.id === userId)
-        const shallow = [...value]
+      if (followData) {
+        const index = followData.findIndex((a) => a.id === userId)
+        const shallow = [...followData]
         shallow[index] = {
           ...shallow[index],
           Followers: shallow[index].Followers.filter(
@@ -136,32 +137,32 @@ export default function FollowRecommend({ user }: Props) {
         }
         queryClient.setQueryData(['users', 'followRecommends'], shallow)
       }
-      const value2: User | undefined = queryClient.getQueryData([
+      const userInfo: User | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      if (value2) {
+      if (userInfo) {
         const shallow = {
-          ...value2,
-          Followers: value2.Followers.filter(
+          ...userInfo,
+          Followers: userInfo.Followers.filter(
             (v) => v.id !== session?.user?.email,
           ),
           _count: {
-            ...value2._count,
-            Followers: value2._count?.Followers - 1,
+            ...userInfo._count,
+            Followers: userInfo._count?.Followers - 1,
           },
         }
         queryClient.setQueryData(['users', userId], shallow)
       }
     },
     onError(error, userId) {
-      const value: User[] | undefined = queryClient.getQueryData([
+      const followData: User[] | undefined = queryClient.getQueryData([
         'users',
         'followRecommends',
       ])
-      if (value) {
-        const index = value.findIndex((a) => a.id === userId)
-        const shallow = [...value]
+      if (followData) {
+        const index = followData.findIndex((a) => a.id === userId)
+        const shallow = [...followData]
         shallow[index] = {
           ...shallow[index],
           Followers: [{ id: session?.user?.email as string }],
@@ -172,18 +173,18 @@ export default function FollowRecommend({ user }: Props) {
         }
         queryClient.setQueryData(['users', 'followRecommends'], shallow)
       }
-      const value2: User | undefined = queryClient.getQueryData([
+      const userInfo: User | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      // console.log(value2);
-      if (value2) {
+
+      if (userInfo) {
         const shallow = {
-          ...value2,
+          ...userInfo,
           Followers: [{ id: session?.user?.email }],
           _count: {
-            ...value2._count,
-            Followers: value2._count?.Followers + 1,
+            ...userInfo._count,
+            Followers: userInfo._count?.Followers + 1,
           },
         }
         queryClient.setQueryData(['users', session?.user?.email], shallow)
@@ -193,7 +194,6 @@ export default function FollowRecommend({ user }: Props) {
   const onFollow: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation() // e.stopPropagation()은 이벤트가 상위 요소로 전파되는 것을 중단합니다. / 이벤트 버블링을 중단하는 데 사용됩니다.
     e.preventDefault() // e.preventDefault()는 이벤트의 기본 동작을 막습니다. / 주로 양식 제출, 링크 클릭, 드래그 앤 드롭 등의 기본 동작을 막는 데 사용됩니다.
-
     if (followed) {
       unfollow.mutate(user.id)
     } else {

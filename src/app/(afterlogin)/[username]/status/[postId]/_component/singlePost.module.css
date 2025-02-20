@@ -1,0 +1,8 @@
+.singlePost {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  font-size: 30;
+  font-weight: bold;
+  justify-content: center;
+}

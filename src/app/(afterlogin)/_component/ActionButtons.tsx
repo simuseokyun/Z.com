@@ -21,6 +21,7 @@ export default function ActionButtons({ white, post }: Props) {
   const queryClient = useQueryClient()
   const router = useRouter()
   const { data: session } = useSession()
+
   const modalStore = useModalStore()
   let target = post
   if (post.Original) {
@@ -30,6 +31,7 @@ export default function ActionButtons({ white, post }: Props) {
   const reposted = !!target.Reposts?.find(
     (v) => v.userId === session?.user?.email,
   )
+
   const liked = !!target.Hearts?.find((v) => v.userId === session?.user?.email)
   const { postId } = post
 
@@ -45,6 +47,7 @@ export default function ActionButtons({ white, post }: Props) {
     },
     async onSuccess(response) {
       const res = await response.json()
+
       const queryCache = queryClient.getQueryCache()
       const queryKeys = queryCache.getAll().map((v) => {
         return v.queryKey
@@ -70,14 +73,19 @@ export default function ActionButtons({ white, post }: Props) {
               shallow.pages[pageIndex] = [...value.pages[pageIndex]]
               shallow.pages[pageIndex][index] = {
                 ...value.pages[pageIndex][index],
+                postId: value.pages[pageIndex][index].postId,
                 Reposts: [{ userId: session?.user?.email as string }],
                 _count: {
                   ...value.pages[pageIndex][index]._count,
                   Reposts: shallow.pages[pageIndex][index]._count.Reposts + 1,
                 },
               }
-              shallow.pages[0].unshift(res)
+
+              if (res.code !== 404) {
+                shallow.pages[0].unshift(res)
+              }
               queryClient.setQueryData(v, shallow)
+              console.log(shallow)
             }
           } else if (value) {
             // 싱글 포스트인 경우
@@ -99,13 +107,15 @@ export default function ActionButtons({ white, post }: Props) {
   })
   const deleteRepost = useMutation({
     mutationFn: async () => {
-      return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}`, {
-        method: 'delete',
-        credentials: 'include',
-        cache: 'no-cache',
-      })
+      return fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/reposts`,
+        {
+          method: 'delete',
+          credentials: 'include',
+          cache: 'no-store', // 데이터를 cache에 저장하지 않겠다 (최신 상태 유지)
+        },
+      )
     },
-
     onSuccess() {
       const queryCache = queryClient.getQueryCache()
       const queryKeys = queryCache.getAll().map((v) => {
@@ -172,6 +182,9 @@ export default function ActionButtons({ white, post }: Props) {
           }
         }
       })
+    },
+    onError(error) {
+      console.log('에러', error)
     },
   })
   const heart = useMutation({

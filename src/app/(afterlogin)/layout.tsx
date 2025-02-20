@@ -47,9 +47,9 @@ export default async function AfterLoginLayout({ children, modal }: Props) {
                   </g>
                 </svg>
               </Link>
-              <LogoutButton me={session} />
-              {/* // 회원가입 후 logout에서 useSession값이 바로 업데이트 되지않음. 따라서 props로 전달 */}
+              {/* // 회원가입 후 로그인이 자동으로 되는데 이때 logout에서 useSession값이 바로 업데이트 되지않음. 따라서 props로 전달 (이 방법이 싫다면 클라이언트 컴포넌트에서 SignIn 함수 처리 */}
             </nav>
+            <LogoutButton me={session} />
           </div>
         </section>
       </header>
@@ -59,7 +59,7 @@ export default async function AfterLoginLayout({ children, modal }: Props) {
             <main className={style.main}>{children}</main>
             <section className={style.rightSection}>
               <RightSearchZone />
-              <TrendSection session={session} />
+              <TrendSection me={session} />
               <div className={style.followRecommend}>
                 <h3>팔로우 추천</h3>
                 <FollowRecommendSection />

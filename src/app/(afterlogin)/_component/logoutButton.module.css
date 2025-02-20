@@ -29,9 +29,9 @@
   }
   .logOutUserName {
     margin: 0 12px;
-    display: inline-block;
+    display: block;
   }
-  .logOutUserName > div:first-child {
+  .logOutUserName > p:first-child {
     font-weight: bold;
   }
 }

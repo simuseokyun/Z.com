@@ -1,9 +1,15 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
-import { ChangeEventHandler, FormEventHandler, useRef, useState } from 'react'
+import {
+  ChangeEventHandler,
+  FormEvent,
+  FormEventHandler,
+  useRef,
+  useState,
+} from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient, useMutation } from '@tanstack/react-query'
 
 import style from './commentForm.module.css'
 
@@ -14,49 +20,53 @@ export default function CommentForm({ id }: { id: string }) {
   >([]) // 이미지에 대한 타입
   const imageRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
-  // console.log(preview);
 
   const onClickButton = () => {
     imageRef.current?.click()
   }
   const { data: me } = useSession()
-  const onSubmit: FormEventHandler = async (e) => {
-    e.preventDefault()
-    const formData = new FormData()
-    formData.append('content', content)
-    preview.forEach((a) => {
-      if (a) {
-        formData.append('images', a?.file)
-      }
-    })
-    try {
-      const res = await fetch(
+
+  const submit = useMutation({
+    mutationFn: (e: FormEvent) => {
+      e.preventDefault() // 폼 전송 막기
+      const formData = new FormData()
+      formData.append('content', content)
+      preview.forEach((image) => {
+        if (image) {
+          formData.append('images', image.file)
+        }
+      })
+      return fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${id}/comments`,
         {
-          method: 'POST',
+          method: 'post',
           credentials: 'include',
           body: formData,
         },
       )
+    },
+    async onSuccess(response) {
+      const newPost = await response.json()
+      setContent('')
+      setPreview([])
+      queryClient.setQueryData(
+        ['posts', id, 'comments'],
+        (prev: { pages: Comment[][] }) => {
+          const shallow = { ...prev, pages: [...prev.pages] }
+          shallow.pages[0] = [newPost, ...shallow.pages[0]]
 
-      if (res.status === 201) {
-        setContent('')
-        setPreview([])
-        const newPost = await res.json()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        queryClient.setQueryData(['posts', id, 'comments'], (prev: any) => {
-          const shallow = [...prev]
-          shallow.unshift(newPost)
           return shallow
-        })
-      }
-    } catch (error) {
-      throw new Error('에러')
-    }
-  }
+        },
+      )
+    },
+    onError(error: string) {
+      console.log(error)
+    },
+  })
+
   const onUpload: ChangeEventHandler<HTMLInputElement> = (e) => {
     e.preventDefault()
-    console.log(e.target.files) // files는 객체(배열)처럼 보이지만 유사배열이라 배열 메서드를 사용할 수 없음. 따라서 Array.from 을 통해 배열로 변경
+    // files는 객체(배열)처럼 보이지만 유사배열이라 배열 메서드를 사용할 수 없음. 따라서 Array.from 을 통해 배열로 변경
     if (e.target.files) {
       Array.from(e.target.files).forEach((file, index) => {
         const reader = new FileReader()
@@ -85,7 +95,7 @@ export default function CommentForm({ id }: { id: string }) {
     setContent(e.target.value)
   }
   return (
-    <form className={style.postForm} onSubmit={onSubmit}>
+    <form className={style.postForm} onSubmit={submit.mutate}>
       <div className={style.postUserSection}>
         <div className={style.postUserImage}>
           <img
@@ -147,7 +157,7 @@ export default function CommentForm({ id }: { id: string }) {
               </button>
             </div>
             <button
-              type="button"
+              type="submit"
               className={style.actionButton}
               disabled={!content}
             >
