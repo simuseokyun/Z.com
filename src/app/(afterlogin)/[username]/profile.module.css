@@ -68,6 +68,14 @@
   font-size: 15px;
 }
 
+.notUserInfo {
+  height: 100;
+  display: flex;
+  align-items: center;
+  font-size: 31;
+  font-weight: bold;
+  justify-content: center;
+}
 .messageButton {
   border: 1px solid #cfd9de;
   width: 34px;
