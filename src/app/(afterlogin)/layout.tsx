@@ -12,7 +12,10 @@ import RightSearchZone from './_component/RightSearchZone'
 import RQProvider from './_component/RQProvider'
 import FollowRecommendSection from './_component/FollowRecommendSection'
 
-type Props = { children: ReactNode; modal: ReactNode }
+interface Props {
+  children: ReactNode
+  modal: ReactNode
+}
 export default async function AfterLoginLayout({ children, modal }: Props) {
   const session = await auth()
 

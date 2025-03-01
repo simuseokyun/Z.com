@@ -22,25 +22,24 @@ import { Post } from '@/model/Post'
 import style from './modal.module.css'
 
 export default function TweetModal() {
-  const modalStore = useModalState()
-  const { data: modal, mode, reset } = useModalState()
-  const parent = modalStore.data
+  const { data, mode, reset } = useModalState()
+  const parent = data
   const queryClient = useQueryClient()
-  const [content, setContent] = useState<string>('')
+  const [content, setContent] = useState('')
   const [preview, setPreview] = useState<
     Array<{ dataUrl: string; file: File } | null>
   >([])
   const { data: me } = useSession()
   const router = useRouter()
   const imageRef = useRef<HTMLInputElement>(null)
-  const mutation = useMutation({
-    mutationFn: async (e: FormEvent) => {
+  const post = useMutation({
+    mutationFn: (e: FormEvent) => {
       e.preventDefault()
       const formData = new FormData()
       formData.append('content', content)
-      preview.forEach((p) => {
-        if (p) {
-          formData.append('images', p.file)
+      preview.forEach((image) => {
+        if (image) {
+          formData.append('images', image.file)
         }
       })
       return fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/posts`, {
@@ -79,13 +78,13 @@ export default function TweetModal() {
     },
   })
   const comment = useMutation({
-    mutationFn: async (e: FormEvent) => {
+    mutationFn: (e: FormEvent) => {
       e.preventDefault()
       const formData = new FormData()
       formData.append('content', content)
-      preview.forEach((p) => {
-        if (p) {
-          formData.append('images', p.file)
+      preview.forEach((image) => {
+        if (image) {
+          formData.append('images', image.file)
         }
       })
       return fetch(
@@ -135,10 +134,12 @@ export default function TweetModal() {
     reset()
   }
   const onSubmit: FormEventHandler<HTMLFormElement> = (e) => {
-    if (modalStore.mode === '새로운글') {
-      mutation.mutate(e)
+    if (mode === '새로운글') {
+      post.mutate(e)
+      reset()
     } else {
       comment.mutate(e)
+      reset()
     }
   }
   const onUpload: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -172,6 +173,9 @@ export default function TweetModal() {
       return shallow
     })
   }
+  const onClickBtn = () => {
+    reset()
+  }
   return (
     <div className={style.modalBackground}>
       <div className={style.modal}>
@@ -193,28 +197,28 @@ export default function TweetModal() {
           </svg>
         </button>
         <form className={style.modalForm} onSubmit={onSubmit}>
-          {mode === '댓글' && modal && (
+          {mode === '댓글' && data && (
             <div className={style.modalOriginal}>
               <div className={style.postUserSection}>
                 <div className={style.postUserImage}>
                   <Image
-                    src={modal.User.image}
-                    alt={modal.User.id}
+                    src={data.User.image}
+                    alt={data.User.id}
                     width={40}
                     height={40}
                   />
                 </div>
               </div>
               <div>
-                {modal.content}
+                {data.content}
                 <div>
                   <Link
-                    href={`/${modal.User.id}`}
+                    href={`/${data.User.id}`}
                     style={{ color: 'rgb(29, 155, 240)' }}
                   >
-                    @{modal.User.id}
+                    @{data.User.id}
                   </Link>
-                  {modal.User.id}
+                  {data.User.id}
                   님에게 보내는 답글
                 </div>
               </div>
@@ -235,18 +239,18 @@ export default function TweetModal() {
               />
               <div style={{ display: 'flex', marginTop: '10px' }}>
                 {preview.map(
-                  (v, index) =>
-                    v && (
+                  (image, index) =>
+                    image && (
                       <div
-                        key={v.dataUrl}
+                        key={image.dataUrl}
                         style={{ flex: 1 }}
                         onClick={() => onRemoveImage(index)}
                       >
                         <Image
-                          src={v.dataUrl}
+                          src={image.dataUrl}
                           alt="미리보기"
-                          width={40}
-                          height={40}
+                          width={100}
+                          height={100}
                           style={{
                             objectFit: 'contain',
                             width: '100%',
@@ -286,6 +290,7 @@ export default function TweetModal() {
               </div>
               <button
                 type="submit"
+                onClick={onClickBtn}
                 className={style.actionButton}
                 disabled={!content}
               >
