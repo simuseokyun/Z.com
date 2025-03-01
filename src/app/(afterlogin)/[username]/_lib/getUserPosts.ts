@@ -1,20 +1,19 @@
-const getUserPosts = async ({
-  queryKey,
-  pageParam,
-}: {
-  queryKey: string[] // queryKey의 타입을 지정
-  pageParam?: number
-}) => {
+import { QueryFunction } from '@tanstack/react-query'
+import { Post } from '@/model/Post'
+
+const getUserPosts: QueryFunction<
+  Post[],
+  [_1: string, _2: string, _3: string],
+  number
+> = async ({ queryKey, pageParam }) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const [_1, _2, username] = queryKey
+  const [, , username] = queryKey
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${username}/posts?cursor=${pageParam}`,
     {
       next: {
         tags: ['posts', 'users', username],
       },
-      credentials: 'include',
-      cache: 'no-store',
     },
   )
 

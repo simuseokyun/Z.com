@@ -6,19 +6,17 @@ const getSinglePostServer = async ({
   queryKey: [string, string]
 }) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const [_1, id] = queryKey
+  const [, id] = queryKey
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${id}`,
     {
       next: {
         tags: ['post', id],
       },
-      credentials: 'include',
-      headers: { Cookies: (await cookies()).toString() }, // 서버 컴포넌트에서 사용할땐 headers 속성 넣어주기
+      headers: { cookies: (await cookies()).toString() }, // 서버 컴포넌트에서 사용할땐 headers 속성 넣어주기
     },
   )
   if (!res.ok) {
-    // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data')
   }
 

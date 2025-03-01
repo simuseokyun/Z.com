@@ -11,6 +11,7 @@ async function getPostRecommends({ pageParam }: Props) {
       credentials: 'include',
     },
   )
+
   if (!res.ok) {
     throw new Error('Failed to fetch data')
   }
