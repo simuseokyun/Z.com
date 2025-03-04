@@ -1,52 +1,26 @@
 'use client'
 
-import { useFormStatus } from 'react-dom'
-import {
-  ChangeEventHandler,
-  FormEventHandler,
-  useActionState,
-  useState,
-} from 'react'
+import { ChangeEventHandler, FormEventHandler, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
-
+// 클라이언트에선 next-auth / 서버 컴포넌트에선 next-auth 로 import할 것
 import CloseButton from '@/app/(afterLogin)/_component/CloseButton'
-
-import onSubmit from '../_lib/signup'
 import style from './signup.module.css'
 
 function showMessage(message: string | null | undefined) {
-  if (message === 'no_id') {
-    return '아이디를 입력하세요.'
-  }
-  if (message === 'no_name') {
-    return '닉네임을 입력하세요.'
-  }
-  if (message === 'no_password') {
-    return '비밀번호를 입력하세요.'
-  }
-  if (message === 'no_image') {
-    return '이미지를 업로드하세요.'
-  }
   if (message === 'user_exists') {
     return '이미 사용 중인 아이디입니다.'
   }
-  if (message === 'nickname must be a string') {
-    return '닉네임이 필요합니다.'
-  }
   return message
-}
-interface ImageProps {
-  baseUrl: string
-  file: File
 }
 
 export default function SignupModal() {
+  const router = useRouter()
+
   const [id, setId] = useState('')
   const [nickname, setNickname] = useState('')
-  const router = useRouter()
   const [password, setPassword] = useState('')
-  const [image, setImage] = useState<ImageProps | null>(null)
+  const [image, setImage] = useState<string | null>(null)
   const [message, setMessage] = useState('')
 
   const changeId: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -63,7 +37,9 @@ export default function SignupModal() {
   }
   const changeImage: ChangeEventHandler<HTMLInputElement> = (e) => {
     e.preventDefault()
-    const file = e.target.files?.[0]
+    if (e.target.files) {
+      setImage(e.target.files[0].name)
+    }
   }
 
   const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
@@ -73,24 +49,6 @@ export default function SignupModal() {
 
     // FormData에서 입력된 값 출력
     // 예시로 'name'이라는 name 속성을 가진 input의 값을 출력
-    if (!formData.get('id') || !(formData.get('id') as string).trim()) {
-      setMessage('아이디를 입력해주세요')
-      return
-    }
-    if (!formData.get('name') || !(formData.get('name') as string).trim()) {
-      setMessage('닉네임을 입력해주세요')
-      return
-    }
-    if (
-      !formData.get('password') ||
-      !(formData.get('password') as string).trim()
-    ) {
-      setMessage('패스워드를 입력해주세요')
-      return
-    }
-    if (!formData.get('image')) {
-      setMessage('이미지를 넣어해주세요')
-    }
     formData.set('nickname', formData.get('name') as string) // nickname이란 속성과 값 formDatad에 추가
     let shouldRedirect = false
     const response = await fetch(
@@ -102,7 +60,7 @@ export default function SignupModal() {
     )
 
     if (response.status === 403) {
-      setMessage('아이디가 중복됩니다.')
+      setMessage('user_exists')
       return
     }
     if (response.status === 400) {
@@ -117,11 +75,11 @@ export default function SignupModal() {
     }
     shouldRedirect = true
     await signIn('credentials', {
-      username: formData.get('id'),
-      password: formData.get('password'),
+      username: id,
+      password,
       redirect: false,
     })
-    console.log('로그인')
+
     if (shouldRedirect) {
       router.replace('/home')
     }
@@ -196,12 +154,14 @@ export default function SignupModal() {
               />
             </div>
           </div>
-          <p style={{ textAlign: 'center', color: 'red' }}>{message}</p>
+          <p style={{ textAlign: 'center', color: 'red' }}>
+            {showMessage(message)}
+          </p>
           <div className={style.modalFooter}>
             <button
               type="submit"
               className={style.actionButton}
-              disabled={!id && !password}
+              disabled={!id || !password || !nickname || !image}
             >
               가입하기
             </button>
