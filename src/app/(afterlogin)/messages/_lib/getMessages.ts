@@ -1,11 +1,12 @@
+import { QueryFunction } from '@tanstack/query-core'
 import { Message } from '@/model/Message'
 
-type Props = {
-  pageParam?: number
-  queryKey: [string, { senderId: string; receiverId: string }, string]
-}
-export default async function getMessages({ pageParam, queryKey }: Props) {
-  const [one, userInfo] = queryKey
+const getMessages: QueryFunction<
+  Message[],
+  [string, { senderId: string; receiverId: string }, string],
+  number
+> = async ({ pageParam, queryKey }) => {
+  const [, userInfo] = queryKey
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userInfo.senderId}/rooms/${userInfo.receiverId}?cursor=${pageParam}`,
     {
@@ -23,3 +24,5 @@ export default async function getMessages({ pageParam, queryKey }: Props) {
 
   return res.json() as Promise<Message[]>
 }
+
+export default getMessages

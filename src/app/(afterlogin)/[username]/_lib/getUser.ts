@@ -1,8 +1,7 @@
-const getUser = async ({
-  queryKey,
-}: {
-  queryKey: [_1: string, _2: string]
-}) => {
+import { QueryFunction } from '@tanstack/query-core'
+import { User } from '@/model/User'
+
+const getUser: QueryFunction<User, [string, string]> = async ({ queryKey }) => {
   const [, username] = queryKey
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${username}`,
@@ -15,7 +14,6 @@ const getUser = async ({
   )
 
   if (!res.ok) {
-    // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data')
   }
 

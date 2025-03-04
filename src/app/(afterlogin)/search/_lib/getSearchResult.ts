@@ -1,14 +1,8 @@
-import { QueryFunction } from '@tanstack/query-core'
-import { Post } from '@/model/Post'
-
-type Props = {
-  searchParams: { q: string; pf?: string; f?: string }
+interface Props {
+  queryKey: [string, string, { q: string; pf?: string; f?: string }]
+  pageParam: number
 }
-const getSearchResult: QueryFunction<
-  Post[],
-  [_1: string, _2: string, Props['searchParams']],
-  number
-> = async ({ queryKey, pageParam }) => {
+const getSearchResult = async ({ queryKey, pageParam }: Props) => {
   const [, , searchParams] = queryKey
   const urlSearchParams = new URLSearchParams(searchParams)
   const res = await fetch(

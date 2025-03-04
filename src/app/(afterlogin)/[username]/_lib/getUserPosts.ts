@@ -3,7 +3,7 @@ import { Post } from '@/model/Post'
 
 const getUserPosts: QueryFunction<
   Post[],
-  [_1: string, _2: string, _3: string],
+  [string, string, string],
   number
 > = async ({ queryKey, pageParam }) => {
   // eslint-disable-next-line @typescript-eslint/naming-convention
