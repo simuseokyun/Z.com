@@ -3,9 +3,10 @@ import {
   dehydrate,
   QueryClient,
 } from '@tanstack/react-query'
+import { Suspense } from 'react'
 import { User } from '@/model/User'
 import { auth } from '@/auth'
-
+import Loading from '../home/loading'
 import getUserPosts from './_lib/getUserPosts'
 import getUserServer from './_lib/getUserServer'
 import UserInfo from './_component/UserInfo'
@@ -32,9 +33,8 @@ export default async function Profile({
   params: { username: string }
 }) {
   const { username } = await params
-  // params의 값이 영어가 아니라면 (한글이나 특수문자) 자동으로 인코딩된 값이 나옴 / ex : #224#@!24214
+  // params의 값이 영어가 아니라면 (한글이나 특수문자) 자동으로 인코딩된 값이 나옴 / ex : #224#@!24214 => 따라서 decodeURIComponent를 통해 디코딩해줘야 함
   const session = await auth()
-
   const decodeUsername = decodeURIComponent(username)
   const queryClient = new QueryClient()
   await queryClient.prefetchQuery({
@@ -45,15 +45,18 @@ export default async function Profile({
     queryKey: ['posts', 'users', decodeUsername],
     queryFn: getUserPosts,
     initialPageParam: 0,
+    // 초기 렌더링에만 쓰이므로 getNextPageParam는 명시하지 않아도 됨
   })
   const dehydratedState = dehydrate(queryClient)
 
   return (
-    <HydrationBoundary state={dehydratedState}>
-      <main className={style.main}>
-        <UserInfo username={decodeUsername} session={session} />
-        <UserPosts username={decodeUsername} me={session} />
-      </main>
-    </HydrationBoundary>
+    <main className={style.main}>
+      <Suspense fallback={<Loading />}>
+        <HydrationBoundary state={dehydratedState}>
+          <UserInfo username={decodeUsername} me={session} />
+          <UserPosts username={decodeUsername} />
+        </HydrationBoundary>
+      </Suspense>
+    </main>
   )
 }

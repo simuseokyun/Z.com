@@ -2,11 +2,15 @@
 
 /* eslint-disable no-unsafe-optional-chaining */
 
-import { Session } from 'next-auth'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useSuspenseQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import cx from 'classnames'
 import { MouseEventHandler } from 'react'
 import { useRouter } from 'next/navigation'
+import { Session } from 'next-auth'
 import { User as IUser } from '@/model/User'
 import BackButton from '../../_component/BackButton'
 import getUser from '../_lib/getUser'
@@ -14,12 +18,12 @@ import style from '../profile.module.css'
 
 interface Props {
   username: string
-  session: Session | null
+  me: Session | null
 }
-export default function UserInfo({ username, session }: Props) {
+export default function UserInfo({ username, me }: Props) {
   const router = useRouter()
   const queryClient = useQueryClient()
-  const { data: user, error } = useQuery<
+  const { data: user } = useSuspenseQuery<
     IUser,
     unknown,
     IUser,
@@ -27,16 +31,18 @@ export default function UserInfo({ username, session }: Props) {
   >({
     queryKey: ['users', username],
     queryFn: getUser,
-    staleTime: 60 * 1000, // fresh -> stale, 5분이라는 기준
+    staleTime: 60 * 1000,
     gcTime: 300 * 1000,
   })
+  const followed = !!user?.Followers.find(
+    (follower) => follower.id === me?.user?.email,
+  )
   const follow = useMutation({
     mutationFn: async (userId: string) => {
       return fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/follow`,
         {
           credentials: 'include',
-          cache: 'no-store',
           method: 'post',
         },
       )
@@ -53,7 +59,7 @@ export default function UserInfo({ username, session }: Props) {
           const shallow = [...value]
           shallow[index] = {
             ...shallow[index],
-            Followers: [{ id: session?.user?.email as string }],
+            Followers: [{ id: me?.user?.email as string }],
             _count: {
               ...shallow[index]._count,
               Followers: shallow[index]._count?.Followers + 1,
@@ -62,17 +68,17 @@ export default function UserInfo({ username, session }: Props) {
           queryClient.setQueryData(['users', 'followRecommends'], shallow)
         }
       }
-      const value2: IUser | undefined = queryClient.getQueryData([
+      const userInfo: IUser | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      if (value2) {
+      if (userInfo) {
         const shallow = {
-          ...value2,
-          Followers: [{ id: session?.user?.email as string }],
+          ...userInfo,
+          Followers: [{ id: me?.user?.email as string }],
           _count: {
-            ...value2._count,
-            Followers: value2._count?.Followers + 1,
+            ...userInfo._count,
+            Followers: userInfo._count?.Followers + 1,
           },
         }
         queryClient.setQueryData(['users', userId], shallow)
@@ -90,7 +96,7 @@ export default function UserInfo({ username, session }: Props) {
           shallow[index] = {
             ...shallow[index],
             Followers: shallow[index].Followers.filter(
-              (follower) => follower.id !== session?.user?.email,
+              (follower) => follower.id !== me?.user?.email,
             ),
             _count: {
               ...shallow[index]._count,
@@ -100,17 +106,17 @@ export default function UserInfo({ username, session }: Props) {
         }
         queryClient.setQueryData(['users', 'followRecommends'], shallow)
       }
-      const value2: IUser | undefined = queryClient.getQueryData([
+      const userInfo: IUser | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      if (value2) {
+      if (userInfo) {
         const shallow = {
-          ...value2,
-          Followers: [{ id: session?.user?.email as string }],
+          ...userInfo,
+          Followers: [{ id: me?.user?.email as string }],
           _count: {
-            ...value2._count,
-            Followers: value2._count.Followers + 1,
+            ...userInfo._count,
+            Followers: userInfo._count.Followers + 1,
           },
           // speard 문법은 객체(array,object)에만 가능합니다
         }
@@ -124,7 +130,7 @@ export default function UserInfo({ username, session }: Props) {
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${userId}/follow`,
         {
           credentials: 'include',
-          cache: 'no-store',
+
           method: 'delete',
         },
       )
@@ -141,7 +147,7 @@ export default function UserInfo({ username, session }: Props) {
           shallow[index] = {
             ...shallow[index],
             Followers: shallow[index].Followers.filter(
-              (follower) => follower.id !== session?.user?.email,
+              (follower) => follower.id !== me?.user?.email,
             ),
             _count: {
               ...shallow[index]._count,
@@ -151,56 +157,24 @@ export default function UserInfo({ username, session }: Props) {
         }
         queryClient.setQueryData(['users', 'followRecommends'], shallow)
       }
-      const value2: IUser | undefined = queryClient.getQueryData([
+      const userInfo: IUser | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      if (value2) {
+      if (userInfo) {
         const shallow = {
-          ...value2,
-          Followers: value2.Followers.filter(
-            (v) => v.id !== session?.user?.email,
-          ),
+          ...userInfo,
+          Followers: userInfo.Followers.filter((v) => v.id !== me?.user?.email),
           _count: {
-            ...value2._count,
-            Followers: value2._count.Followers - 1,
+            ...userInfo._count,
+            Followers: userInfo._count.Followers - 1,
           },
-          // speard 문법은 객체(array,object)에만 가능합니다
+          // speard 문법은 객체(array,object)에만 하다
         }
         queryClient.setQueryData(['users', userId], shallow)
       }
     },
-    // onMutate(userId: string) {
-    //     const value: IUser[] | undefined = queryClient.getQueryData(['users', 'followRecommends']);
-    //     if (value) {
-    //         const index = value.findIndex((v) => v.id === userId);
-    //         if (index > -1) {
-    //             console.log(value, userId, index);
-    //             const shallow = [...value];
-    //             shallow[index] = {
-    //                 ...shallow[index],
-    //                 Followers: shallow[index].Followers.filter((v) => v.id !== session?.user?.email),
-    //                 _count: {
-    //                     ...shallow[index]._count,
-    //                     Followers: shallow[index]._count?.Followers - 1,
-    //                 },
-    //             };
-    //             queryClient.setQueryData(['users', 'followRecommends'], shallow);
-    //         }
-    //         const value2: IUser | undefined = queryClient.getQueryData(['users', userId]);
-    //         if (value2) {
-    //             const shallow = {
-    //                 ...value2,
-    //                 Followers: value2.Followers.filter((v) => v.id !== session?.user?.email),
-    //                 _count: {
-    //                     ...value2._count,
-    //                     Followers: value2._count?.Followers - 1,
-    //                 },
-    //             };
-    //             queryClient.setQueryData(['users', userId], shallow);
-    //         }
-    //     }
-    // },
+
     onError(error, userId) {
       const value: IUser[] | undefined = queryClient.getQueryData([
         'users',
@@ -213,7 +187,7 @@ export default function UserInfo({ username, session }: Props) {
           const shallow = [...value]
           shallow[index] = {
             ...shallow[index],
-            Followers: [{ id: session?.user?.email as string }],
+            Followers: [{ id: me?.user?.email as string }],
             _count: {
               ...shallow[index]._count,
               Followers: shallow[index]._count?.Followers + 1,
@@ -222,26 +196,24 @@ export default function UserInfo({ username, session }: Props) {
           queryClient.setQueryData(['users', 'followRecommends'], shallow)
         }
       }
-      const value2: IUser | undefined = queryClient.getQueryData([
+      const userInfo: IUser | undefined = queryClient.getQueryData([
         'users',
         userId,
       ])
-      if (value2) {
+      if (userInfo) {
         const shallow = {
-          ...value2,
-          Followers: [{ id: session?.user?.email as string }],
+          ...userInfo,
+          Followers: [{ id: me?.user?.email as string }],
           _count: {
-            ...value2._count,
-            Followers: value2._count?.Followers + 1,
+            ...userInfo._count,
+            Followers: userInfo._count?.Followers + 1,
           },
         }
         queryClient.setQueryData(['users', userId], shallow)
       }
     },
   })
-  const followed = user?.Followers.find(
-    (follower) => follower.id === session?.user?.email,
-  )
+
   const onFollow: MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation()
     e.preventDefault()
@@ -252,38 +224,27 @@ export default function UserInfo({ username, session }: Props) {
     }
   }
   const onMessage = () => {
-    const ids = [session?.user?.email, user?.id]
+    const ids = [me?.user?.email, user?.id]
     ids.sort()
     router.push(`/messages/${ids.join('-')}`)
   }
-  if (error) {
-    return (
-      <>
-        <div className={style.header}>
-          <BackButton />
-          <h3 className={style.headerTitle}>프로필</h3>
-        </div>
-        <div className={style.userZone}>
-          <div className={style.userImage} />
-          <div className={style.userName}>
-            <div>@{username}</div>
-          </div>
-        </div>
-        <div
-          style={{
-            height: 100,
-            alignItems: 'center',
-            fontSize: 31,
-            fontWeight: 'bold',
-            justifyContent: 'center',
-            display: 'flex',
-          }}
-        >
-          계정이 존재하지 않음
-        </div>
-      </>
-    )
-  }
+  // if (error) {
+  //   return (
+  //     <>
+  //       <div className={style.header}>
+  //         <BackButton />
+  //         <h3 className={style.headerTitle}>프로필</h3>
+  //       </div>
+  //       <div className={style.userZone}>
+  //         <div className={style.userImage} />
+  //         <div className={style.userName}>
+  //           <div>@{username}</div>
+  //         </div>
+  //       </div>
+  //       <div className={style.notUserInfo}>계정이 존재하지 않음</div>
+  //     </>
+  //   )
+  // }
 
   if (!user) {
     return null
@@ -304,7 +265,7 @@ export default function UserInfo({ username, session }: Props) {
               <div>{user?.nickname}</div>
               <div>@{user?.id}</div>
             </div>
-            {session?.user?.email !== username && (
+            {me?.user?.email !== username && (
               <>
                 <button
                   type="button"
