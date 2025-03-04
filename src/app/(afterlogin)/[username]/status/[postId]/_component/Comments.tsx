@@ -1,14 +1,10 @@
 'use client'
 
-import {
-  InfiniteData,
-  useInfiniteQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useInView } from 'react-intersection-observer'
 import { Fragment, useEffect } from 'react'
 import Post from '@/app/(afterLogin)/_component/Post'
-import { Post as IPost } from '@/model/Post'
+
 import getComments from '../_lib/getComments'
 
 type Props = {
@@ -19,20 +15,14 @@ export default function Comments({ id }: Props) {
   const post = queryClient.getQueryData(['posts', id])
   const { ref, inView } = useInView({
     threshold: 0,
-    delay: 2000,
+    delay: 500,
   })
-  const { data, hasNextPage, fetchNextPage, isFetching } = useInfiniteQuery<
-    IPost[],
-    unknown,
-    InfiniteData<IPost[]>,
-    [_1: string, _2: string, _3: string],
-    number
-  >({
+  const { data, hasNextPage, fetchNextPage, isFetching } = useInfiniteQuery({
     queryKey: ['posts', id, 'comments'],
     queryFn: getComments,
     initialPageParam: 0,
     getNextPageParam: (lastId) => lastId.at(-1)?.postId,
-    staleTime: 10 * 1000, // fresh -> stale, 5분이라는 기준
+    staleTime: 60 * 1000, //
     gcTime: 300 * 1000,
     enabled: !!post,
   })
@@ -55,7 +45,7 @@ export default function Comments({ id }: Props) {
             ))}
           </Fragment>
         ))}
-        <div ref={ref} style={{ height: 10, background: 'yellow' }} />
+        <div ref={ref} style={{ height: 10 }} />
       </>
     )
   }
