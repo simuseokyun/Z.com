@@ -1,24 +1,30 @@
+import { QueryClient, dehydrate } from '@tanstack/query-core'
+import { HydrationBoundary } from '@tanstack/react-query'
 import style from './message.module.css'
 import { auth } from '@/auth'
-import getRooms from './_lib/getRooms'
-import Room from './_component/Room'
+import Rooms from './_component/Rooms'
+import getRoomsServer from './_lib/getRoomsServer'
 
-export default async function Home() {
+export default async function Page() {
   const session = await auth()
-  const rooms = session?.user?.email ? await getRooms(session?.user?.email) : []
+  const queryClient = new QueryClient()
 
+  if (session?.user?.email) {
+    await queryClient.prefetchQuery({
+      queryKey: ['room'],
+      queryFn: () => getRoomsServer(session?.user?.email as string),
+    })
+  }
+
+  const dehydrateState = dehydrate(queryClient)
   return (
     <main className={style.main}>
       <div className={style.header}>
         <h3>쪽지</h3>
       </div>
-      {rooms.length ? (
-        rooms.map((room) => <Room key={room.room} room={room} />)
-      ) : (
-        <p style={{ textAlign: 'center', fontWeight: 500 }}>
-          메시지 목록이 존재하지 않습니다.
-        </p>
-      )}
+      <HydrationBoundary state={dehydrateState}>
+        <Rooms me={session} />
+      </HydrationBoundary>
     </main>
   )
 }

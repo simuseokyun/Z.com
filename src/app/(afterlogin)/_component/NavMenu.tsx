@@ -1,22 +1,38 @@
 'use client'
 
-import { useSelectedLayoutSegment } from 'next/navigation'
+/* eslint-disable react/button-has-type */
+/* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable jsx-a11y/anchor-has-content */
+import { useSelectedLayoutSegment, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Session } from 'next-auth'
-
+import { MouseEventHandler, useEffect } from 'react'
+import useSocket from '../messages/_lib/useSocket'
 import style from './navMenu.module.css'
+import useNotificationList from '@/store/notificationList'
 
 type Props = {
   me: Session | null
 }
 export default function NavMenu({ me }: Props) {
   const segment = useSelectedLayoutSegment()
+  const clickState = useNotificationList((state) => state.clickState)
+  const setClickState = useNotificationList((state) => state.setClickState)
+
+  const router = useRouter()
   // 주로 최상위 컴포넌트, layout에 사용하는 걸 권장
   // 최상위 경로(첫 번째 세그먼트)만 출력하고싶다 => useSelectedLayoutSegment
   // 하위 경로까지 출력하고싶다 => usePathName
+  const clickNotification: MouseEventHandler<HTMLAnchorElement> = (e) => {
+    e.preventDefault()
+    setClickState(true)
+    router.push('/notifications')
+  }
+  // eslint-disable-next-line consistent-return
 
   return (
     <>
+      <button onClick={() => setClickState(false)} />
       <li>
         <Link href="/home">
           <div className={style.navPill}>
@@ -123,41 +139,83 @@ export default function NavMenu({ me }: Props) {
         </Link>
       </li>
       {me?.user?.email && (
-        <li>
-          <Link href={`/${me?.user.email}`}>
-            <div className={style.navPill}>
-              {segment === me.user.email ? (
-                <>
-                  <svg
-                    width={26}
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="r-18jsvk2 r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-cnnz9e"
-                  >
-                    <g>
-                      <path d="M17.863 13.44c1.477 1.58 2.366 3.8 2.632 6.46l.11 1.1H3.395l.11-1.1c.266-2.66 1.155-4.88 2.632-6.46C7.627 11.85 9.648 11 12 11s4.373.85 5.863 2.44zM12 2C9.791 2 8 3.79 8 6s1.791 4 4 4 4-1.79 4-4-1.791-4-4-4z" />
-                    </g>
-                  </svg>
-                  <div style={{ fontWeight: 'bold' }}>프로필</div>
-                </>
-              ) : (
-                <>
-                  <svg
-                    width={26}
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                    className="r-18jsvk2 r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-cnnz9e"
-                  >
-                    <g>
-                      <path d="M5.651 19h12.698c-.337-1.8-1.023-3.21-1.945-4.19C15.318 13.65 13.838 13 12 13s-3.317.65-4.404 1.81c-.922.98-1.608 2.39-1.945 4.19zm.486-5.56C7.627 11.85 9.648 11 12 11s4.373.85 5.863 2.44c1.477 1.58 2.366 3.8 2.632 6.46l.11 1.1H3.395l.11-1.1c.266-2.66 1.155-4.88 2.632-6.46zM12 4c-1.105 0-2 .9-2 2s.895 2 2 2 2-.9 2-2-.895-2-2-2zM8 6c0-2.21 1.791-4 4-4s4 1.79 4 4-1.791 4-4 4-4-1.79-4-4z" />
-                    </g>
-                  </svg>
-                  <div>프로필</div>
-                </>
-              )}
-            </div>
-          </Link>
-        </li>
+        <>
+          <li>
+            <Link href={`/${me.user.email}`}>
+              <div className={style.navPill}>
+                {segment === me.user.email ? (
+                  <>
+                    <svg
+                      width={26}
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="r-18jsvk2 r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-cnnz9e"
+                    >
+                      <g>
+                        <path d="M17.863 13.44c1.477 1.58 2.366 3.8 2.632 6.46l.11 1.1H3.395l.11-1.1c.266-2.66 1.155-4.88 2.632-6.46C7.627 11.85 9.648 11 12 11s4.373.85 5.863 2.44zM12 2C9.791 2 8 3.79 8 6s1.791 4 4 4 4-1.79 4-4-1.791-4-4-4z" />
+                      </g>
+                    </svg>
+                    <div style={{ fontWeight: 'bold' }}>프로필</div>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width={26}
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="r-18jsvk2 r-4qtqp9 r-yyyyoo r-lwhw9o r-dnmrzs r-bnwqim r-1plcrui r-lrvibr r-cnnz9e"
+                    >
+                      <g>
+                        <path d="M5.651 19h12.698c-.337-1.8-1.023-3.21-1.945-4.19C15.318 13.65 13.838 13 12 13s-3.317.65-4.404 1.81c-.922.98-1.608 2.39-1.945 4.19zm.486-5.56C7.627 11.85 9.648 11 12 11s4.373.85 5.863 2.44c1.477 1.58 2.366 3.8 2.632 6.46l.11 1.1H3.395l.11-1.1c.266-2.66 1.155-4.88 2.632-6.46zM12 4c-1.105 0-2 .9-2 2s.895 2 2 2 2-.9 2-2-.895-2-2-2zM8 6c0-2.21 1.791-4 4-4s4 1.79 4 4-1.791 4-4 4-4-1.79-4-4z" />
+                      </g>
+                    </svg>
+                    <div>프로필</div>
+                  </>
+                )}
+              </div>
+            </Link>
+          </li>
+          <li style={{ position: 'relative' }}>
+            <Link href="/notification" onClick={clickNotification}>
+              {/* <a onClick={clickNotification} /> */}
+              <div className={style.navPill}>
+                {segment === 'notifications' ? (
+                  <>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" width={26}>
+                      <g>
+                        <path d="M19.993 9.042C19.48 5.017 16.054 2 11.996 2s-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958zM12 20c-1.306 0-2.417-.835-2.829-2h5.658c-.412 1.165-1.523 2-2.829 2zm-6.866-4l.847-6.698C6.364 6.272 8.941 4 11.996 4s5.627 2.268 6.013 5.295L18.864 16H5.134z" />
+                      </g>
+                    </svg>
+                    <div style={{ fontWeight: 'bold' }}>알림</div>
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" width={26}>
+                      <g>
+                        <path d="M19.993 9.042C19.48 5.017 16.054 2 11.996 2s-7.49 3.021-7.999 7.051L2.866 18H7.1c.463 2.282 2.481 4 4.9 4s4.437-1.718 4.9-4h4.236l-1.143-8.958zM12 20c-1.306 0-2.417-.835-2.829-2h5.658c-.412 1.165-1.523 2-2.829 2zm-6.866-4l.847-6.698C6.364 6.272 8.941 4 11.996 4s5.627 2.268 6.013 5.295L18.864 16H5.134z" />
+                      </g>
+                    </svg>
+                    <div>알림</div>
+                  </>
+                )}
+                {!clickState && (
+                  <p
+                    style={{
+                      position: 'absolute',
+                      bottom: 10,
+                      left: 10,
+                      background: 'red',
+                      width: 10,
+                      height: 10,
+                      borderRadius: '50%',
+                      color: 'white',
+                    }}
+                  />
+                )}
+              </div>
+            </Link>
+          </li>
+        </>
       )}
     </>
   )

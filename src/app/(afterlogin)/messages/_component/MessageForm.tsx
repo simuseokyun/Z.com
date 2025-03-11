@@ -8,9 +8,11 @@ import {
   KeyboardEventHandler,
 } from 'react'
 import { useSession } from 'next-auth/react'
-import { useQueryClient } from '@tanstack/react-query'
+import { InfiniteData, useQueryClient } from '@tanstack/react-query'
 import useSocket from '../_lib/useSocket'
+import { Message } from '@/model/Message'
 import style from './messageForm.module.css'
+import useMessageStore from '@/store/message'
 
 interface Props {
   id: string
@@ -20,18 +22,59 @@ export default function MessageForm({ id }: Props) {
   const { data: session } = useSession()
   const [content, setContent] = useState('')
   const queryClient = useQueryClient()
+  const { setGoDown } = useMessageStore()
   const [socket] = useSocket() // use가 붙은 커스텀훅은 사용하는 컴포넌트마다 상태가 공유되는게 아니라 계속 새로 생성되는 것임 (주의요망)
   const onChange: ChangeEventHandler<HTMLTextAreaElement> = (e) => {
-    e.preventDefault()
     setContent(e.target.value)
   }
   const onSubmit = () => {
+    if (!session?.user?.email) {
+      return
+    }
+    const ids = [session?.user?.email, id]
+    ids.sort()
+
     socket?.emit('sendMessage', {
       senderId: session?.user?.email,
       receiverId: id,
       content,
     })
+    const messageList = queryClient.getQueryData([
+      'rooms',
+      {
+        senderId: session?.user?.email,
+        receiverId: id,
+      },
+      'messages',
+    ]) as InfiniteData<Message[]>
+    if (messageList && typeof messageList === 'object') {
+      const newMessages = {
+        ...messageList,
+        pages: [...messageList.pages],
+      }
+      const lastPage = newMessages.pages.at(-1)
+      const newLastPage = lastPage ? [...lastPage] : []
+      const lastMessageId = lastPage?.at(-1)?.messageId
 
+      newLastPage.push({
+        senderId: session.user.email,
+        receiverId: id,
+        content,
+        room: ids.join('-'),
+        messageId: lastMessageId ? lastMessageId + 1 : 1,
+        createdAt: new Date(),
+      })
+      newMessages.pages[newMessages.pages.length - 1] = newLastPage
+      queryClient.setQueryData(
+        [
+          'rooms',
+          { senderId: session?.user?.email, receiverId: id },
+          'messages',
+        ],
+        newMessages,
+      )
+      setGoDown(true)
+    }
     setContent('')
   }
   const onEnter: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
@@ -43,6 +86,7 @@ export default function MessageForm({ id }: Props) {
       if (!content?.trim()) {
         return
       }
+      console.log('전송')
       onSubmit()
       setContent('')
     }
@@ -69,7 +113,7 @@ export default function MessageForm({ id }: Props) {
           value={content}
           placeholder="새 쪽지 작성하기"
           onChange={onChange}
-          onKeyDown={onEnter}
+          onKeyUp={onEnter}
         />
         <button
           className={style.submitButton}

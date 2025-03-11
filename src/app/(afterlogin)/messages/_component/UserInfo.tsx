@@ -5,15 +5,18 @@ import { useQuery } from '@tanstack/react-query'
 import style from '@/app/(afterLogin)/messages/[room]/chatRoom.module.css'
 import BackButton from '@/app/(afterLogin)/_component/BackButton'
 import getUser from '@/app/(afterLogin)/[username]/_lib/getUser'
+import { User } from '@/model/User'
 
 interface Props {
   id: string
 }
 function UserInfo({ id }: Props) {
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<User, Error, User, [string, string]>({
     queryKey: ['users', id],
     queryFn: getUser,
+    enabled: !!id,
   })
+
   if (!user) {
     return null
   }

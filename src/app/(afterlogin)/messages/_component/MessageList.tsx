@@ -3,7 +3,6 @@
 import cx from 'classnames'
 import dayjs from 'dayjs'
 import {
-  DefaultError,
   InfiniteData,
   useInfiniteQuery,
   useQueryClient,
@@ -17,6 +16,7 @@ import getMessages from '../_lib/getMessages'
 import style from '@/app/(afterLogin)/messages/[room]/chatRoom.module.css'
 import useMessageStore from '@/store/message'
 import useSocket from '../_lib/useSocket'
+import useNotificationList from '@/store/notificationList'
 
 interface Props {
   id: string
@@ -24,8 +24,12 @@ interface Props {
 
 export default function MessageList({ id }: Props) {
   const { data: session } = useSession()
-  const { shouldGoDown } = useMessageStore()
-  const { setGoDown } = useMessageStore()
+  const { ref, inView } = useInView({
+    threshold: 0,
+    delay: 1000,
+  })
+  const addContent = useNotificationList((state) => state.addContent)
+  const { shouldGoDown, setGoDown } = useMessageStore()
   const listRef = useRef<HTMLDivElement>(null)
   const [pageRendered, setPageRendered] = useState(false)
   const [adjustingScroll, setAdjustingScroll] = useState(false)
@@ -34,20 +38,7 @@ export default function MessageList({ id }: Props) {
     isFetching,
     hasPreviousPage,
     fetchPreviousPage,
-  } = useInfiniteQuery<
-    Message[],
-    DefaultError,
-    InfiniteData<Message[]>,
-    [
-      string,
-      {
-        senderId: string
-        receiverId: string
-      },
-      string,
-    ],
-    number
-  >({
+  } = useInfiniteQuery({
     queryKey: [
       'rooms',
       { senderId: session?.user?.email as string, receiverId: id },
@@ -60,10 +51,7 @@ export default function MessageList({ id }: Props) {
     getNextPageParam: (lastPage) =>
       lastPage.length < 10 ? undefined : lastPage.at(-1)?.messageId,
     enabled: !!(session?.user?.email && id),
-  })
-  const { ref, inView } = useInView({
-    threshold: 0,
-    delay: 0,
+    // 리버스 인피니트 스크롤링이라도 getNExtPageParam값은 필수로 넣어줘야 함
   })
 
   const queryClient = useQueryClient()
@@ -120,6 +108,7 @@ export default function MessageList({ id }: Props) {
   useEffect(() => {
     socket?.on('receiveMessage', (data) => {
       // 리액트 쿼리 데이터에 추가
+      console.log('메시지 받음')
       const exMessages = queryClient.getQueryData([
         'rooms',
         {
@@ -145,6 +134,7 @@ export default function MessageList({ id }: Props) {
           ],
           newMessages,
         )
+
         setGoDown(true)
       }
     })

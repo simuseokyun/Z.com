@@ -20,7 +20,7 @@ export default function RightSearchZone() {
   }
   const onChangeAll = () => {
     const newSearchParams = new URLSearchParams(searchParams)
-    newSearchParams.set('pf', 'null')
+    newSearchParams.set('pf', '')
     router.replace(`/search?${newSearchParams.toString()}`)
   }
   if (pathname === '/explore') {

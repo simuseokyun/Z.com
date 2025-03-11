@@ -2,7 +2,6 @@
 
 import { useSuspenseQuery } from '@tanstack/react-query'
 import Post from '@/app/(afterLogin)/_component/Post'
-import { Post as IPost } from '@/model/Post'
 
 import getSinglePost from '../_lib/getSinglePost'
 
@@ -11,15 +10,10 @@ type Props = {
   noImage?: boolean
 }
 export default function SinglePost({ id, noImage }: Props) {
-  const { data: post } = useSuspenseQuery<
-    IPost,
-    unknown,
-    IPost,
-    [_1: string, _2: string]
-  >({
+  const { data: post } = useSuspenseQuery({
     queryKey: ['posts', id],
     queryFn: getSinglePost,
-    staleTime: 60 * 1000, // fresh -> stale, 5분이라는 기준
+    staleTime: 60 * 1000,
     gcTime: 300 * 1000,
   })
 

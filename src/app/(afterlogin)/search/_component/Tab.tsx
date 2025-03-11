@@ -11,7 +11,7 @@ export default function Tab() {
   const onClickFirstTab = () => {
     setTab('hot')
     const newSearchParams = new URLSearchParams(searchParams)
-    newSearchParams.set('f', 'null')
+    newSearchParams.set('f', '')
     router.replace(`/search?${newSearchParams.toString()}`)
   }
   const onClickSecondTab = () => {

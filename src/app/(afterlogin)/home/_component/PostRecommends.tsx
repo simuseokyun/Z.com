@@ -1,3 +1,5 @@
+/* eslint-disable react/button-has-type */
+
 'use client'
 
 import { InfiniteData, useSuspenseInfiniteQuery } from '@tanstack/react-query'
@@ -22,6 +24,7 @@ export default function PostRecommends() {
       getNextPageParam: (lastPage) => lastPage.at(-1)?.postId,
       staleTime: 60 * 1000,
       gcTime: 300 * 1000,
+
       // staleTime/gcTime 명시하지않으면 계속 데이터 요청
     })
 

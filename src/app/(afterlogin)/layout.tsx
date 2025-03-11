@@ -11,6 +11,7 @@ import LogoutButton from './_component/LogoutButton'
 import RightSearchZone from './_component/RightSearchZone'
 import RQProvider from './_component/RQProvider'
 import FollowRecommendSection from './_component/FollowRecommendSection'
+import WebSocketComponent from './messages/_component/WebSocketComponent'
 
 interface Props {
   children: ReactNode
@@ -25,6 +26,7 @@ export default async function AfterLoginLayout({ children, modal }: Props) {
 
   return (
     <div className={style.container}>
+      <WebSocketComponent />
       <header className={style.leftSectionWrapper}>
         <section className={style.leftSection}>
           <div className={style.leftSectionFixed}>

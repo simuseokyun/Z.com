@@ -14,29 +14,27 @@ import useModalStore from '@/store/modal'
 import style from './post.module.css'
 
 type Props = {
-  white?: boolean
   post: Post
+  white?: boolean
 }
-export default function ActionButtons({ white, post }: Props) {
+export default function ActionButtons({ post, white }: Props) {
   const queryClient = useQueryClient()
   const router = useRouter()
   const { data: session } = useSession()
-
   const modalStore = useModalStore()
   let target = post
   if (post.Original) {
     target = post.Original
   }
-
+  const { postId } = post
   const reposted = !!target.Reposts?.find(
     (v) => v.userId === session?.user?.email,
   )
 
   const liked = !!target.Hearts?.find((v) => v.userId === session?.user?.email)
-  const { postId } = post
 
   const repost = useMutation({
-    mutationFn: async () => {
+    mutationFn: () => {
       return fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/reposts`,
         {
@@ -46,12 +44,14 @@ export default function ActionButtons({ white, post }: Props) {
       )
     },
     async onSuccess(response) {
-      const res = await response.json()
-
+      const newPost = await response.json()
       const queryCache = queryClient.getQueryCache()
       const queryKeys = queryCache.getAll().map((v) => {
         return v.queryKey
       })
+      if (newPost.code === 404) {
+        return
+      }
 
       queryKeys.forEach((v) => {
         if (v[0] === 'posts') {
@@ -66,9 +66,7 @@ export default function ActionButtons({ white, post }: Props) {
               const index = value.pages[pageIndex].findIndex(
                 (x) => x.postId === postId,
               )
-
               const shallow = { ...value }
-
               shallow.pages = [...value.pages]
               shallow.pages[pageIndex] = [...value.pages[pageIndex]]
               shallow.pages[pageIndex][index] = {
@@ -80,12 +78,9 @@ export default function ActionButtons({ white, post }: Props) {
                   Reposts: shallow.pages[pageIndex][index]._count.Reposts + 1,
                 },
               }
-
-              if (res.code !== 404) {
-                shallow.pages[0].unshift(res)
-              }
+              shallow.pages[0].unshift(newPost)
+              // push는 배열의 마지막 인덱스에 추가 / unshift는 배열 첫 번째 자리에 추가
               queryClient.setQueryData(v, shallow)
-              console.log(shallow)
             }
           } else if (value) {
             // 싱글 포스트인 경우
@@ -106,13 +101,12 @@ export default function ActionButtons({ white, post }: Props) {
     },
   })
   const deleteRepost = useMutation({
-    mutationFn: async () => {
+    mutationFn: () => {
       return fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/reposts`,
         {
           method: 'delete',
           credentials: 'include',
-          cache: 'no-store', // 데이터를 cache에 저장하지 않겠다 (최신 상태 유지)
         },
       )
     },
@@ -124,7 +118,7 @@ export default function ActionButtons({ white, post }: Props) {
 
       queryKeys.forEach((v) => {
         if (v[0] === 'posts') {
-          const value: Post[] | InfiniteData<Post[]> | undefined =
+          const value: Post | InfiniteData<Post[]> | undefined =
             queryClient.getQueryData(v)
           if (value && 'pages' in value) {
             const obj = value.pages.flat().find((v) => v.postId === postId)
@@ -164,31 +158,29 @@ export default function ActionButtons({ white, post }: Props) {
             }
           } else if (value) {
             // 싱글 포스트인 경우
-            const index = value.findIndex((v) => v.postId === postId)
-            const shallow = [...value]
-            shallow[index] = {
-              ...value[index],
-              Reposts: value[index].Reposts.filter(
-                (v) => v.userId !== (session?.user?.email as string),
-              ),
-              _count: {
-                ...shallow[index]._count,
-                Reposts: shallow[index]._count.Reposts - 1,
-              },
+            if (value.postId === postId) {
+              const shallow = {
+                ...value,
+                Reposts: value.Reposts.filter(
+                  (v) => v.userId !== session?.user?.email,
+                ),
+                _count: {
+                  ...value._count,
+                  Reposts: value._count.Reposts - 1,
+                },
+              }
+              queryClient.setQueryData(v, shallow)
             }
-            const hi = shallow.filter((v) => v.postId !== postId)
-
-            queryClient.setQueryData(v, hi)
           }
         }
       })
     },
     onError(error) {
-      console.log('에러', error)
+      console.error('error : ', error)
     },
   })
   const heart = useMutation({
-    mutationFn: async () => {
+    mutationFn: () => {
       // fetch는 기본적으로 promise를 사용하기 때문에 await 사용하는 것이 일반적
       return fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/heart`,
@@ -300,14 +292,12 @@ export default function ActionButtons({ white, post }: Props) {
     },
   })
   const unHeart = useMutation({
-    mutationFn: async () => {
-      // fetch는 기본적으로 promise를 사용하기 때문에 await 사용하는 것이 일반적
+    mutationFn: () => {
       return fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/posts/${postId}/heart`,
         {
           method: 'delete',
           credentials: 'include',
-          cache: 'no-cache',
         },
       )
     },
@@ -422,7 +412,7 @@ export default function ActionButtons({ white, post }: Props) {
     e.stopPropagation()
     e.preventDefault()
     if (post.Original) {
-      return
+      return // 재게시한 게시물 다시 재게시 X
     }
     if (!reposted) {
       repost.mutate()
@@ -472,11 +462,11 @@ export default function ActionButtons({ white, post }: Props) {
         <div className={style.count}>{target._count?.Reposts || ''}</div>
       </div>
       <div
-        className={cx([
+        className={cx(
           style.heartButton,
           liked && style.liked,
           white && style.white,
-        ])}
+        )}
       >
         <button type="button" onClick={onClickHeart}>
           <svg width={24} viewBox="0 0 24 24" aria-hidden="true">

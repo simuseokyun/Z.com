@@ -1,9 +1,9 @@
-import { QueryFunction } from '@tanstack/query-core'
 import { cookies } from 'next/headers'
-import { Post } from '@/model/Post'
 
-const getSinglePostServer: QueryFunction<Post[], [string, string]> = async ({
+const getSinglePostServer = async ({
   queryKey,
+}: {
+  queryKey: [string, string]
 }) => {
   const [, id] = queryKey
   const res = await fetch(

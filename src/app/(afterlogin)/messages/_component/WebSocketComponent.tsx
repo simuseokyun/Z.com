@@ -1,9 +1,25 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 import useSocket from '../_lib/useSocket'
+import useNotificationList from '@/store/notificationList'
 
 export default function WebSocketComponent() {
-  // 이 컴포넌트의 용도는 단순 연결을 맺는 용도
-  useSocket()
+  const addContent = useNotificationList((state) => state.addContent)
+  const setClickState = useNotificationList((state) => state.setClickState)
+
+  const [socket] = useSocket()
+  useEffect(() => {
+    socket?.on('receiveMessage', (data) => {
+      addContent({
+        postId: Math.random().toString(),
+        email: data.senderId,
+        createAt: new Date(),
+      })
+      setClickState(false)
+    })
+  }, [socket])
+
   return null
 }

@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { Session } from 'next-auth'
 import { useQuery } from '@tanstack/react-query'
-import { useRouter } from 'next/router'
+
 import { Hashtag } from '@/model/Hashtag'
 import getTrends from '../_lib/getTrends'
 import Trend from './Trend'
